@@ -1,0 +1,162 @@
+#include "ConfiguratorSerial.h"
+#include <ELRSController.h>
+
+boolean ConfiguratorSerial::isConnected()
+{
+    return this->_isConnected;
+}
+
+void ConfiguratorSerial::loop()
+{
+    if (Serial.available())
+    {
+        String input = Serial.readStringUntil('\n');
+        String chunks[MAX_CHUNKS];
+
+        int count = parseCommand(input, chunks, MAX_CHUNKS);
+        if (count > 0)
+        {
+            return this->processCommand(chunks, count);
+        }
+        if (this->isConnected() && !this->_configTransfer && this->_resources.size() > 0)
+        {
+            if (DEBUG)
+            {
+                Serial.print("Processing stored configs: ");
+            }
+            static MotorConfig motors[MAX_MOTORS];
+            static BrushlessMotorConfig brushlessMotors[MAX_BRUSHLESS_MOTORS];
+            static ControllerRule controllerRules[MAX_RULES];
+
+            int motorsCount = 0;
+            int brushlessCount = 0;
+            int rulesCount = 0;
+
+            memset(motors, 0, sizeof(motors));
+            memset(brushlessMotors, 0, sizeof(brushlessMotors));
+            memset(controllerRules, 0, sizeof(controllerRules));
+
+            // TODO: keep for each controller type for first phase
+            static ELRSConfig elrs[MAX_CONTROLLERS];
+            int controllerCount = 0;        
+            memset(elrs, 0, sizeof(elrs));
+            
+            for (const auto &kv : this->_resources)
+            {
+                size_t pos = kv.first.find('_');
+                if (pos == std::string::npos)
+                {
+                    continue;
+                }
+
+                std::string type = kv.first.substr(0, pos);
+                const char *jsonCStr = kv.second.c_str();
+                String json = String(jsonCStr);
+
+                if (DEBUG)
+                {
+                    Serial.println("ID - " + String(kv.first.c_str()));
+                    Serial.println("Data - " + String(kv.second.c_str()));
+                }
+
+                
+                if (type == TYPE_MOTORS && motorsCount < MAX_MOTORS) {
+                    motors[motorsCount++] = MotorConfig(json);
+                }
+                if (type == TYPE_BRUSHLESS_MOTORS && motorsCount < MAX_BRUSHLESS_MOTORS) {
+                    brushlessMotors[brushlessCount++] = BrushlessMotorConfig(json);
+                }
+
+                if(type == TYPE_CONTROLLER && controllerCount < MAX_CONTROLLERS) {
+                    
+                    elrs[controllerCount++] = ELRSConfig(json);
+                }
+
+                if(type == TYPE_CONTROLLER_RULES && rulesCount < MAX_RULES) {
+                    controllerRules[rulesCount++] = ControllerRule(json);
+                }
+            }
+
+            if (motorsCount > 0)
+                _store->saveMotorsConfig(motors, motorsCount);
+            if (brushlessCount > 0)
+                _store->saveBrushlessMotorsConfig(brushlessMotors, brushlessCount);
+            if (controllerCount > 0)
+                _store->saveELRSConfig(elrs, controllerCount);
+            if (rulesCount > 0)
+                _store->saveControllerRulesConfig(controllerRules, rulesCount);
+
+            this->clear();
+        }
+    }
+}
+
+void ConfiguratorSerial::processCommand(String chunks[], int count)
+{
+    String baseCommand = chunks[0];
+    if (baseCommand == _CMD_SERIAL)
+    {
+        this->_isConnected = (chunks[1] == "1") ? true : false;
+        if (DEBUG)
+        {
+            Serial.println("Serial connected: " + String(this->_isConnected));
+        }
+    }
+    else if (baseCommand == _CMD_TRANSFER)
+    {
+        this->_configTransfer = (chunks[1] == "1") ? true : false;
+        if (DEBUG)
+        {
+            Serial.println("Serial transfer: " + String(this->_isConnected));
+        }
+    }
+    else if (baseCommand == _CMD_REQUEST_RESOURCES)
+    {
+        if (DEBUG)
+        {
+            Serial.println("Requested resources:");
+        }
+        _store->printResourcesConfgs();
+    }
+    else if (baseCommand == _CMD_STORE_RESOURCES)
+    {
+        String resourceId = chunks[1];
+        String resourceConfig = chunks[2];
+        this->addResource(resourceId.c_str(), resourceConfig.c_str());
+    }
+}
+
+int ConfiguratorSerial::parseCommand(String received, String outputChunks[], int maxChunks)
+{
+    received.trim();
+
+    if (!received.startsWith("[") || !received.endsWith("]"))
+    {
+        return 0;
+    }
+
+    received = received.substring(1, received.length() - 1);
+    int chunkIndex = 0;
+
+    while (received.length() > 0 && chunkIndex < maxChunks)
+    {
+        int sep = received.indexOf('@');
+        if (sep == -1)
+        {
+            outputChunks[chunkIndex++] = received;
+            break;
+        }
+        outputChunks[chunkIndex++] = received.substring(0, sep);
+        received = received.substring(sep + 1);
+    }
+
+    return chunkIndex;
+}
+
+void ConfiguratorSerial::printElrsChannels(int channels[16])
+{
+    for (int i = 0; i < 16; i++)
+    {
+        Serial.printf("[rx:%d:%d]\n", i + 1, channels[i]);
+    }
+}

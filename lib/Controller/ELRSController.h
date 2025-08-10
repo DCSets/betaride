@@ -1,0 +1,77 @@
+#ifndef ELRS_CONTROLLER_H
+#define ELRS_CONTROLLER_H
+
+#include <Arduino.h>
+#include <ArduinoJson.h>
+#include <AlfredoCRSF.h>
+#include <HardwareSerial.h>
+#include <enums.h>
+#include <ConfiguratorHelpers.h>
+#include <structs.h>
+#include <Controller.h>
+
+struct ELRSConfig : public ControllerConfig
+{
+    ControllerType getControllerType() const override { return ControllerType::ELRS; }
+
+    int rxPin;
+    int txPin;
+    int uart;
+    ELRSConfig() = default;
+    ELRSConfig(String json)
+    {
+        JsonDocument doc;
+        DeserializationError err = deserializeJson(doc, json);
+
+        if (err)
+        {
+            Serial.println(F("JSON parse error - ELRS RX config"));
+            return;
+        }
+
+        this->isNew = false;
+        strncpy(this->id, doc["id"], sizeof(this->id));
+        strncpy(this->name, doc["name"], sizeof(this->name));
+        strncpy(this->type, doc["type"], sizeof(this->type));
+
+        this->rxPin = doc["rxPin"];
+        this->txPin = doc["txPin"];
+        this->uart = doc["uart"];
+    }
+
+    void toJson(String &outJson) const
+    {
+        JsonDocument doc;
+
+        doc["id"] = this->id;
+        doc["name"] = this->name;
+        doc["type"] = this->type;
+        doc["rxPin"] = this->rxPin;
+        doc["txPin"] = this->txPin;
+        doc["uart"] = this->uart;
+        doc["isNew"] = this->isNew;
+
+        serializeJson(doc, outJson);
+    }
+};
+
+class ELRSController : public Controller
+{
+private:
+    ELRSConfig _config;
+    AlfredoCRSF _crsf;
+    HardwareSerial _crsfSerial;
+    boolean _ready = false;
+
+public:
+    ELRSController(ELRSConfig config)
+        : _config(config),
+          _crsf(),
+          _crsfSerial(config.uart) {}
+
+    void begin() override;
+    void loop() override;
+    void getAllChannels(int *outChannels) override;
+};
+
+#endif
