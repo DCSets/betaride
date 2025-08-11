@@ -7,6 +7,7 @@
 #include <BrushlessMotor.h>
 #include <Controller.h>
 #include <ELRSController.h>
+#include <PS5Controller.h>
 #include <Servo.h>
 #include <constants.h>
 #include <ControllerRules.h>
@@ -21,22 +22,30 @@ public:
     void saveResources(T *resources, int count, const char *entity, int maxCount);
     template <typename T, size_t N>
     T *loadConfig(T (&configArray)[N], const char *entityKey, const char *debugName = "config");
+    
+    // Method to load controller config (supports different controller types)
+    void loadController();
 
     void saveMotorsConfig(MotorConfig *motorsConfig, int count) { this->saveResources(motorsConfig, count, TYPE_MOTORS, MAX_MOTORS); };
     void saveBrushlessMotorsConfig(BrushlessMotorConfig *brushlessMotorsConfig, int count) { this->saveResources(brushlessMotorsConfig, count, TYPE_BRUSHLESS_MOTORS, MAX_BRUSHLESS_MOTORS); };
-    void saveELRSConfig(ELRSConfig *elrsConfig, int count) { this->saveResources(elrsConfig, count, TYPE_CONTROLLER, MAX_CONTROLLERS); };
+    void saveELRSConfig(ELRSConfig *elrsConfig, int count) { this->saveResources(elrsConfig, count, TYPE_CONTROLLER, 1); };
+    void savePS5Config(PS5ControllerConfig *ps5Config, int count) { this->saveResources(ps5Config, count, TYPE_CONTROLLER, 1); };
     void saveControllerRulesConfig(ControllerRule *rules, int count) { this->saveResources(rules, count, TYPE_CONTROLLER_RULES, MAX_RULES); };
 
     
     MotorConfig *loadMotorsConfig() { return this->loadConfig(_motorsConfig, TYPE_MOTORS, "motors"); };
     BrushlessMotorConfig *loadBrushlessMotorsConfig() { return this->loadConfig(_brushlessMotorsConfig, TYPE_BRUSHLESS_MOTORS, "brushless motors"); };
-    ELRSConfig *loadELRSConfig() { return this->loadConfig(_elrsConfig, TYPE_CONTROLLER, "Controller"); };
+    ELRSConfig *loadELRSConfig() { this->loadController(); return &_elrsConfig; };
     ControllerRule *loadControllerRulesConfig() { return this->loadConfig(_controllerRules, TYPE_CONTROLLER_RULES, "Controller rules"); };
 
     MotorConfig *getMotorsConfig() { return _motorsConfig; };
     BrushlessMotorConfig *getBrushlessMotorsConfig() { return _brushlessMotorsConfig; };
-    ELRSConfig *getELRSConfig() { return _elrsConfig; };
     ControllerRule *getControllerRulesConfig() { return _controllerRules; };
+
+    ELRSConfig *getELRSConfig() { return &_elrsConfig; };
+    PS5ControllerConfig *getPS5Config() { return &_ps5Config; };
+    // Generic method to get the actual stored controller config
+    ControllerConfig* getControllerConfig();
 
     void printResourcesConfgs();
 
@@ -46,8 +55,10 @@ private:
     // Array members to store the data
     MotorConfig _motorsConfig[MAX_MOTORS];
     BrushlessMotorConfig _brushlessMotorsConfig[MAX_BRUSHLESS_MOTORS];
-    ELRSConfig _elrsConfig[MAX_CONTROLLERS];
     ControllerRule _controllerRules[MAX_RULES];
+    ELRSConfig _elrsConfig;  // Single ELRS config
+    PS5ControllerConfig _ps5Config;  // Single PS5 config
+    
 
     void getIds(const char *entity, String *idsArray, int maxCount);
     String joinIds(const String *ids, int maxCount);

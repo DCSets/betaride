@@ -1,5 +1,5 @@
 #include "ConfiguratorSerial.h"
-#include <ELRSController.h>
+
 
 boolean ConfiguratorSerial::isConnected()
 {
@@ -36,10 +36,14 @@ void ConfiguratorSerial::loop()
             memset(brushlessMotors, 0, sizeof(brushlessMotors));
             memset(controllerRules, 0, sizeof(controllerRules));
 
-            // TODO: keep for each controller type for first phase
-            static ELRSConfig elrs[MAX_CONTROLLERS];
-            int controllerCount = 0;        
-            memset(elrs, 0, sizeof(elrs));
+            // Single ELRS controller config
+            static ELRSConfig elrsConfig;
+            static PS5ControllerConfig ps5Config;
+            bool hasElrsConfig = false;
+            bool hasPs5Config = false;
+            memset(&elrsConfig, 0, sizeof(elrsConfig));
+            memset(&ps5Config, 0, sizeof(ps5Config));
+            
             
             for (const auto &kv : this->_resources)
             {
@@ -67,9 +71,21 @@ void ConfiguratorSerial::loop()
                     brushlessMotors[brushlessCount++] = BrushlessMotorConfig(json);
                 }
 
-                if(type == TYPE_CONTROLLER && controllerCount < MAX_CONTROLLERS) {
-                    
-                    elrs[controllerCount++] = ELRSConfig(json);
+                if(type == TYPE_CONTROLLER) {
+                    JsonDocument doc;
+                    validateJsonHelper(json.c_str(), doc, "Controller config");
+                    if(hasPs5Config || hasElrsConfig) {
+                        continue;
+                    }
+                    int controllerTypeValue = doc["controllerType"];
+                    if(controllerTypeValue == ControllerType::ELRS) {
+                        elrsConfig = ELRSConfig(json);
+                        hasElrsConfig = true;
+                    }
+                    if(controllerTypeValue == ControllerType::PS5) {
+                        ps5Config = PS5ControllerConfig(json);
+                        hasPs5Config = true;
+                    }
                 }
 
                 if(type == TYPE_CONTROLLER_RULES && rulesCount < MAX_RULES) {
@@ -81,8 +97,10 @@ void ConfiguratorSerial::loop()
                 _store->saveMotorsConfig(motors, motorsCount);
             if (brushlessCount > 0)
                 _store->saveBrushlessMotorsConfig(brushlessMotors, brushlessCount);
-            if (controllerCount > 0)
-                _store->saveELRSConfig(elrs, controllerCount);
+            if (hasElrsConfig)
+                _store->saveELRSConfig(&elrsConfig, 1);
+            if (hasPs5Config)
+                _store->savePS5Config(&ps5Config, 1);
             if (rulesCount > 0)
                 _store->saveControllerRulesConfig(controllerRules, rulesCount);
 

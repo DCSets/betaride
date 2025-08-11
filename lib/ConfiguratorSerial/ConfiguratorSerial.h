@@ -7,6 +7,8 @@
 #include <ConfigStore.h>
 #include <constants.h>
 #include <enums.h>
+#include <ELRSController.h>
+#include <PS5Controller.h>
 
 class ConfiguratorSerial
 {

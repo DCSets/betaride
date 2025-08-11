@@ -9,16 +9,13 @@ ConfigStore::ConfigStore()
 
     this->loadMotorsConfig();
     this->loadBrushlessMotorsConfig();
-    this->loadELRSConfig();
+    this->loadController();
     this->loadControllerRulesConfig();
 
     if (DEBUG)
     {
         Serial.println("ConfigStore initialization finished");
-        Serial.println("Brushless motors: ");
-        this->printConfigs(_brushlessMotorsConfig, MAX_BRUSHLESS_MOTORS);
-        Serial.println("Controller config: ");
-        this->printConfigs(_elrsConfig, MAX_CONTROLLERS);
+        this->printResourcesConfgs();
     }
 }
 
@@ -95,6 +92,120 @@ String ConfigStore::joinIds(const String *ids, int maxCount)
 
 void ConfigStore::printResourcesConfgs()
 {
+    Serial.println("=== Brushless Motors ===");
     this->printConfigs(_brushlessMotorsConfig, MAX_BRUSHLESS_MOTORS);
+    
+    Serial.println("=== Motors ===");
     this->printConfigs(_motorsConfig, MAX_MOTORS);
+    
+    Serial.println("=== Controller ===");
+    ControllerConfig* controllerConfig = this->getControllerConfig();
+    if (controllerConfig != nullptr)
+    {
+        String json;
+        controllerConfig->toJson(json);
+        Serial.println(json);
+    }
+    else
+    {
+        Serial.println("No controller config found");
+    }
+    
+    Serial.println("=== Controller Rules ===");
+    this->printConfigs(_controllerRules, MAX_RULES);
+}
+
+ControllerConfig* ConfigStore::getControllerConfig()
+{
+    // Check if ELRS config exists (has non-empty id)
+    if (strlen(_elrsConfig.id) > 0)
+    {
+        if (DEBUG)
+            Serial.println("Returning ELRS controller config");
+        return &_elrsConfig;
+    }
+    
+    // Check if PS5 config exists (has non-empty id)
+    if (strlen(_ps5Config.id) > 0)
+    {
+        if (DEBUG)
+            Serial.println("Returning PS5 controller config");
+        return &_ps5Config;
+    }
+    
+    // No controller config found
+    if (DEBUG)
+        Serial.println("No controller config found");
+    return nullptr;
+}
+
+void ConfigStore::loadController()
+{
+    memset(&_elrsConfig, 0, sizeof(_elrsConfig));
+    memset(&_ps5Config, 0, sizeof(_ps5Config));
+
+    String ids[1];  // Only need space for 1 ID
+    this->getIds(TYPE_CONTROLLER, ids, 1);
+    
+    if (DEBUG)
+    {
+        Serial.println("Loading controller config: " + ids[0]);
+    }
+
+    if (ids[0].isEmpty())
+    {
+        if (DEBUG)
+            Serial.println("No controller config found");
+        return;
+    }
+
+    if (DEBUG)
+        Serial.printf("Loading controller config for %s\n", ids[0].c_str());
+    
+    // Load JSON string from NVS
+    String jsonString = _prefs.getString(ids[0].c_str(), "");
+    if (jsonString.isEmpty())
+    {
+        if (DEBUG)
+            Serial.printf("No JSON data found for controller config %s\n", ids[0].c_str());
+        return;
+    }
+
+    // Parse JSON to determine controller type
+    JsonDocument doc;
+    DeserializationError err = deserializeJson(doc, jsonString);
+    
+    if (err)
+    {
+        if (DEBUG)
+            Serial.println("JSON parse error - controller config");
+        return;
+    }
+
+    // Check controller type and load appropriate config
+    String controllerType = doc["type"];
+    
+    if (controllerType == "ELRS")
+    {
+        if (DEBUG)
+            Serial.println("Loading ELRS controller config");
+        _elrsConfig = ELRSConfig(jsonString);
+    }
+    else if (controllerType == "PS5")
+    {
+        if (DEBUG)
+            Serial.println("Loading PS5 controller config");
+        _ps5Config = PS5ControllerConfig(jsonString);
+    }
+    else
+    {
+        if (DEBUG)
+            Serial.printf("Unknown controller type: %s\n", controllerType.c_str());
+        return;
+    }
+
+    if (DEBUG)
+    {
+        Serial.println("Controller config loaded: " + ids[0] + " (Type: " + controllerType + ")");
+    }
 }

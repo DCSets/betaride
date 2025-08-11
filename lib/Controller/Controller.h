@@ -4,6 +4,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <enums.h>
+#include <constants.h>
 #include <ConfiguratorHelpers.h>
 #include <structs.h>
 
