@@ -35,15 +35,15 @@ public:
     
     MotorConfig *loadMotorsConfig() { return this->loadConfig(_motorsConfig, TYPE_MOTORS, "motors"); };
     BrushlessMotorConfig *loadBrushlessMotorsConfig() { return this->loadConfig(_brushlessMotorsConfig, TYPE_BRUSHLESS_MOTORS, "brushless motors"); };
-    ELRSConfig *loadELRSConfig() { this->loadController(); return &_elrsConfig; };
+    ELRSConfig *loadELRSConfig() { return this->loadConfig(_elrsConfig, TYPE_CONTROLLER, "Elrs controller"); };
     ControllerRule *loadControllerRulesConfig() { return this->loadConfig(_controllerRules, TYPE_CONTROLLER_RULES, "Controller rules"); };
 
     MotorConfig *getMotorsConfig() { return _motorsConfig; };
     BrushlessMotorConfig *getBrushlessMotorsConfig() { return _brushlessMotorsConfig; };
     ControllerRule *getControllerRulesConfig() { return _controllerRules; };
 
-    ELRSConfig *getELRSConfig() { return &_elrsConfig; };
-    PS5ControllerConfig *getPS5Config() { return &_ps5Config; };
+    ELRSConfig *getELRSConfig() { return _elrsConfig; };
+    PS5ControllerConfig *getPS5Config() { return _ps5Config; };
     // Generic method to get the actual stored controller config
     ControllerConfig* getControllerConfig();
 
@@ -56,8 +56,8 @@ private:
     MotorConfig _motorsConfig[MAX_MOTORS];
     BrushlessMotorConfig _brushlessMotorsConfig[MAX_BRUSHLESS_MOTORS];
     ControllerRule _controllerRules[MAX_RULES];
-    ELRSConfig _elrsConfig;  // Single ELRS config
-    PS5ControllerConfig _ps5Config;  // Single PS5 config
+    ELRSConfig _elrsConfig[1];  // Single ELRS config
+    PS5ControllerConfig _ps5Config[1];  // Single PS5 config
     
 
     void getIds(const char *entity, String *idsArray, int maxCount);
@@ -75,24 +75,22 @@ template <typename T>
 inline void ConfigStore::saveResources(T *resources, int count, const char *entity, int maxCount)
 {
     this->cleanEntity(entity, maxCount);
-
     // Build a comma-separated list of IDs while saving each resource payload
     String idsJoined;
     for (int i = 0; i < count && i < maxCount; i++)
     {
         T *cfg = &resources[i];
-
         if (idsJoined.length() > 0)
         {
             idsJoined += ",";
         }
         idsJoined += cfg->id;
-
-        // Convert struct to JSON string
+        // Convert struct to JSON string and save it to prefs
         String jsonString;
         cfg->toJson(jsonString);
-
-        // Save JSON string instead of binary data
+        if(DEBUG) {
+            Serial.println("Saving config: " + String(cfg->id) + " " + jsonString);
+        }
         _prefs.putString(cfg->id, jsonString);
     }
 

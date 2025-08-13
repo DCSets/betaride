@@ -164,7 +164,7 @@ void App::loop()
             auto evalCond = [&](const RuleCondition &c)
         {
             // channel expected as string number like "1".."16"
-            int chIndex = atoi(c.channel);
+            int chIndex = c.channel;
             if (chIndex < 1 || chIndex > 16)
                 return false;
             int value = channels[chIndex - 1];

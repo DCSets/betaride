@@ -25,7 +25,7 @@ Controller* ControllerFactory::createControllerFromJson(const String& json) {
 }
 
 Controller* ControllerFactory::createControllerFromConfig(const ControllerConfig& config) {
-    switch (config.getControllerType()) {
+    switch (config.controllerType) {
         case ControllerType::ELRS: {
             const ELRSConfig& elrsConfig = static_cast<const ELRSConfig&>(config);
             return new ELRSController(elrsConfig);

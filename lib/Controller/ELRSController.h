@@ -12,8 +12,6 @@
 
 struct ELRSConfig : public ControllerConfig
 {
-    ControllerType getControllerType() const override { return ControllerType::ELRS; }
-
     int rxPin;
     int txPin;
     int uart;
@@ -30,21 +28,22 @@ struct ELRSConfig : public ControllerConfig
         }
 
         this->isNew = false;
+        this->controllerType = ControllerType::ELRS;
         strncpy(this->id, doc["id"], sizeof(this->id));
         strncpy(this->name, doc["name"], sizeof(this->name));
         strncpy(this->type, doc["type"], sizeof(this->type));
-
         this->rxPin = doc["rxPin"];
         this->txPin = doc["txPin"];
         this->uart = doc["uart"];
     }
 
-    void toJson(String &outJson) const
+    void toJson(String &outJson) const override
     {
         JsonDocument doc;
 
         doc["id"] = this->id;
         doc["name"] = this->name;
+        doc["controllerType"] = this->controllerType;
         doc["type"] = this->type;
         doc["rxPin"] = this->rxPin;
         doc["txPin"] = this->txPin;

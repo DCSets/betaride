@@ -1,6 +1,5 @@
 #include "ConfiguratorSerial.h"
 
-
 boolean ConfiguratorSerial::isConnected()
 {
     return this->_isConnected;
@@ -14,98 +13,107 @@ void ConfiguratorSerial::loop()
         String chunks[MAX_CHUNKS];
 
         int count = parseCommand(input, chunks, MAX_CHUNKS);
+
         if (count > 0)
         {
             return this->processCommand(chunks, count);
         }
-        if (this->isConnected() && !this->_configTransfer && this->_resources.size() > 0)
+    }
+    if (this->isConnected() && !this->_configTransfer && this->_resources.size() > 0)
+    {
+        if (DEBUG)
         {
+            Serial.println("Processing stored configs: ");
+        }
+        static MotorConfig motors[MAX_MOTORS];
+        static BrushlessMotorConfig brushlessMotors[MAX_BRUSHLESS_MOTORS];
+        static ControllerRule controllerRules[MAX_RULES];
+
+        int motorsCount = 0;
+        int brushlessCount = 0;
+        int rulesCount = 0;
+
+        memset(motors, 0, sizeof(motors));
+        memset(brushlessMotors, 0, sizeof(brushlessMotors));
+        memset(controllerRules, 0, sizeof(controllerRules));
+
+        // Single ELRS controller config
+        // Memset corrupts the vtable, so we don't use it. TODO: implement proper reset
+        static ELRSConfig elrsConfig[1];
+        static PS5ControllerConfig ps5Config[1];
+        bool hasElrsConfig = false;
+        bool hasPs5Config = false;
+
+
+        for (const auto &kv : this->_resources)
+        {
+            size_t pos = kv.first.find('_');
+            if (pos == std::string::npos)
+            {
+                continue;
+            }
+
+            std::string type = kv.first.substr(0, pos);
+            const char *jsonCStr = kv.second.c_str();
+            String json = String(jsonCStr);
+
+            Serial.printf("Processing stored configs: %s %s \n", type.c_str(), kv.first.c_str());
             if (DEBUG)
             {
-                Serial.print("Processing stored configs: ");
+                Serial.println("ID - " + String(kv.first.c_str()));
+                Serial.println("Data - " + String(kv.second.c_str()));
             }
-            static MotorConfig motors[MAX_MOTORS];
-            static BrushlessMotorConfig brushlessMotors[MAX_BRUSHLESS_MOTORS];
-            static ControllerRule controllerRules[MAX_RULES];
 
-            int motorsCount = 0;
-            int brushlessCount = 0;
-            int rulesCount = 0;
-
-            memset(motors, 0, sizeof(motors));
-            memset(brushlessMotors, 0, sizeof(brushlessMotors));
-            memset(controllerRules, 0, sizeof(controllerRules));
-
-            // Single ELRS controller config
-            static ELRSConfig elrsConfig;
-            static PS5ControllerConfig ps5Config;
-            bool hasElrsConfig = false;
-            bool hasPs5Config = false;
-            memset(&elrsConfig, 0, sizeof(elrsConfig));
-            memset(&ps5Config, 0, sizeof(ps5Config));
-            
-            
-            for (const auto &kv : this->_resources)
+            if (type == TYPE_MOTORS && motorsCount < MAX_MOTORS)
             {
-                size_t pos = kv.first.find('_');
-                if (pos == std::string::npos)
+                motors[motorsCount++] = MotorConfig(json);
+            }
+            if (type == TYPE_BRUSHLESS_MOTORS && motorsCount < MAX_BRUSHLESS_MOTORS)
+            {
+                brushlessMotors[brushlessCount++] = BrushlessMotorConfig(json);
+            }
+
+            if (type == TYPE_CONTROLLER)
+            {
+                JsonDocument doc;
+                validateJsonHelper(json.c_str(), doc, "Controller config");
+                if (hasPs5Config || hasElrsConfig)
                 {
                     continue;
                 }
-
-                std::string type = kv.first.substr(0, pos);
-                const char *jsonCStr = kv.second.c_str();
-                String json = String(jsonCStr);
-
-                if (DEBUG)
+                int controllerTypeValue = doc["controllerType"];
+                if (controllerTypeValue == ControllerType::ELRS)
                 {
-                    Serial.println("ID - " + String(kv.first.c_str()));
-                    Serial.println("Data - " + String(kv.second.c_str()));
+                    elrsConfig[0] = ELRSConfig(json);
+                    hasElrsConfig = true;
                 }
-
-                
-                if (type == TYPE_MOTORS && motorsCount < MAX_MOTORS) {
-                    motors[motorsCount++] = MotorConfig(json);
-                }
-                if (type == TYPE_BRUSHLESS_MOTORS && motorsCount < MAX_BRUSHLESS_MOTORS) {
-                    brushlessMotors[brushlessCount++] = BrushlessMotorConfig(json);
-                }
-
-                if(type == TYPE_CONTROLLER) {
-                    JsonDocument doc;
-                    validateJsonHelper(json.c_str(), doc, "Controller config");
-                    if(hasPs5Config || hasElrsConfig) {
-                        continue;
-                    }
-                    int controllerTypeValue = doc["controllerType"];
-                    if(controllerTypeValue == ControllerType::ELRS) {
-                        elrsConfig = ELRSConfig(json);
-                        hasElrsConfig = true;
-                    }
-                    if(controllerTypeValue == ControllerType::PS5) {
-                        ps5Config = PS5ControllerConfig(json);
-                        hasPs5Config = true;
-                    }
-                }
-
-                if(type == TYPE_CONTROLLER_RULES && rulesCount < MAX_RULES) {
-                    controllerRules[rulesCount++] = ControllerRule(json);
+                if (controllerTypeValue == ControllerType::PS5)
+                {
+                    ps5Config[0] = PS5ControllerConfig(json);
+                    hasPs5Config = true;
                 }
             }
 
-            if (motorsCount > 0)
-                _store->saveMotorsConfig(motors, motorsCount);
-            if (brushlessCount > 0)
-                _store->saveBrushlessMotorsConfig(brushlessMotors, brushlessCount);
-            if (hasElrsConfig)
-                _store->saveELRSConfig(&elrsConfig, 1);
-            if (hasPs5Config)
-                _store->savePS5Config(&ps5Config, 1);
-            if (rulesCount > 0)
-                _store->saveControllerRulesConfig(controllerRules, rulesCount);
-
-            this->clear();
+            if (type == TYPE_CONTROLLER_RULES && rulesCount < MAX_RULES)
+            {
+                controllerRules[rulesCount++] = ControllerRule(json);
+            }
         }
+
+        if (motorsCount > 0)
+            _store->saveMotorsConfig(motors, motorsCount);
+        if (brushlessCount > 0)
+            _store->saveBrushlessMotorsConfig(brushlessMotors, brushlessCount);
+        if (hasElrsConfig) {
+            _store->saveELRSConfig(elrsConfig, 1);
+        }
+        if (hasPs5Config)
+            _store->savePS5Config(ps5Config, 1);
+        if (rulesCount > 0) {
+            Serial.println("Saving rules");
+            _store->saveControllerRulesConfig(controllerRules, rulesCount);
+        }
+        this->clear();
     }
 }
 
@@ -125,7 +133,7 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
         this->_configTransfer = (chunks[1] == "1") ? true : false;
         if (DEBUG)
         {
-            Serial.println("Serial transfer: " + String(this->_isConnected));
+            Serial.println("Serial transfer: " + String(this->_configTransfer));
         }
     }
     else if (baseCommand == _CMD_REQUEST_RESOURCES)

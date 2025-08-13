@@ -9,7 +9,7 @@
 
 struct RuleCondition
 {
-    char channel[8];
+    int channel;
     ChannelFunction channelFunction;
     int channelValue; // used for EXACT/ABOVE/BELOW/AE/BE
     int channelFrom;  // used for RANGE
@@ -20,7 +20,7 @@ struct RuleCondition
         JsonDocument doc;
         if (validateJsonHelper(json.c_str(), doc, "ELRS rule condition"))
         {
-            strncpy(this->channel, doc["channel"], sizeof(this->channel));
+            this->channel = doc["channel"];
             this->channelFunction = static_cast<ChannelFunction>(doc["channelFunction"].as<int>());
             this->channelValue = doc["channelValue"];
             this->channelFrom = doc["channelFrom"];
@@ -50,28 +50,9 @@ struct RuleEffect
     virtual ~RuleEffect() {}
     virtual const char *type() const = 0;
 
-    virtual void fromJson(String json)
-    {
-        JsonDocument doc;
-        if (validateJsonHelper(json.c_str(), doc, "RuleEffect"))
-        {
-            strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
-            this->value = doc["value"];
-            this->from = doc["from"];
-            this->to = doc["to"];
-        }
-    }
+    virtual void fromJson(String json) = 0;
 
-    virtual void toJson(String &outJson) const
-    {
-        JsonDocument doc;
-        doc["type"] = type();
-        doc["resourceId"] = this->resourceId;
-        doc["value"] = this->value;
-        doc["from"] = this->from;
-        doc["to"] = this->to;
-        serializeJson(doc, outJson);
-    }
+    virtual void toJson(String &outJson) const = 0;
 };
 
 struct RuleEffectMotor : public RuleEffect
@@ -83,20 +64,32 @@ struct RuleEffectMotor : public RuleEffect
 
     void fromJson(String json) override
     {
-        RuleEffect::fromJson(json);
         JsonDocument doc;
         if (validateJsonHelper(json.c_str(), doc, "RuleEffect"))
         {
+            strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
+            this->value = doc["value"];
+            this->from = doc["from"];
+            this->to = doc["to"];
             this->direction = static_cast<MotorDirection>(doc["direction"].as<int>());
             this->function = static_cast<MotorFunction>(doc["function"].as<int>());
         }
     }
     void toJson(String &outJson) const override
     {
-        RuleEffect::toJson(outJson);
         JsonDocument doc;
+        
+        // Add base class data
+        doc["type"] = type();
+        doc["resourceId"] = this->resourceId;
+        doc["value"] = this->value;
+        doc["from"] = this->from;
+        doc["to"] = this->to;
+        
+        // Add derived class data
         doc["direction"] = static_cast<int>(this->direction);
         doc["function"] = static_cast<int>(this->function);
+        
         serializeJson(doc, outJson);
     }
 };
@@ -110,20 +103,32 @@ struct RuleEffectBrushlessMotor : public RuleEffect
 
     void fromJson(String json) override
     {
-        RuleEffect::fromJson(json);
         JsonDocument doc;
-        if (validateJsonHelper(json.c_str(), doc, "RuleEffectMotor"))
+        if (validateJsonHelper(json.c_str(), doc, "RuleEffectBrushlessMotor"))
         {
+            strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
+            this->value = doc["value"];
+            this->from = doc["from"];
+            this->to = doc["to"];
             this->direction = static_cast<MotorDirection>(doc["direction"].as<int>());
             this->function = static_cast<MotorFunction>(doc["function"].as<int>());
         }
     }
     void toJson(String &outJson) const override
     {
-        RuleEffect::toJson(outJson);
         JsonDocument doc;
+        
+        // Add base class data
+        doc["type"] = type();
+        doc["resourceId"] = this->resourceId;
+        doc["value"] = this->value;
+        doc["from"] = this->from;
+        doc["to"] = this->to;
+        
+        // Add derived class data
         doc["direction"] = static_cast<int>(this->direction);
         doc["function"] = static_cast<int>(this->function);
+        
         serializeJson(doc, outJson);
     }
 };
@@ -138,20 +143,32 @@ struct RuleEffectServo : public RuleEffect
 
     void fromJson(String json) override
     {
-        RuleEffect::fromJson(json);
         JsonDocument doc;
-        if (validateJsonHelper(json.c_str(), doc, "RuleEffectMotor"))
+        if (validateJsonHelper(json.c_str(), doc, "RuleEffectServo"))
         {
+            strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
+            this->value = doc["value"];
+            this->from = doc["from"];
+            this->to = doc["to"];
             this->direction = static_cast<MotorDirection>(doc["direction"].as<int>());
             this->function = static_cast<MotorFunction>(doc["function"].as<int>());
         }
     }
     void toJson(String &outJson) const override
     {
-        RuleEffect::toJson(outJson);
         JsonDocument doc;
+        
+        // Add base class data
+        doc["type"] = type();
+        doc["resourceId"] = this->resourceId;
+        doc["value"] = this->value;
+        doc["from"] = this->from;
+        doc["to"] = this->to;
+        
+        // Add derived class data
         doc["direction"] = static_cast<int>(this->direction);
         doc["function"] = static_cast<int>(this->function);
+        
         serializeJson(doc, outJson);
     }
 };
@@ -184,29 +201,78 @@ struct ControllerRule : public Resource
         this->isNew = doc["isNew"];
         this->hasSubCondition = doc["hasSubCondition"];
 
-        // Parse nested JSON strings
-        String conditionJson = doc["condition"];
-        String subConditionJson = doc["subCondition"];
-        String effectJson = doc["effect"];
-
-        String effectType = doc["effect"]["type"] | "";
-
-        if (effectType == TYPE_MOTORS)
-            effect.reset(new RuleEffectMotor());
-        else if (effectType == TYPE_BRUSHLESS_MOTORS)
-            effect.reset(new RuleEffectBrushlessMotor());
-        else if (effectType == TYPE_SERVOS)
-            effect.reset(new RuleEffectServo());
-        else
-            effect.reset();
-
-        if (effect)
+        // Parse condition as JSON object
+        if ( doc["condition"].is<JsonObject>())
         {
-            effect->fromJson(effectJson);
+            String conditionJson;
+            serializeJson(doc["condition"], conditionJson);
+            this->condition = RuleCondition(conditionJson);
         }
 
-        this->condition = RuleCondition(conditionJson);
-        this->subCondition = RuleCondition(subConditionJson);
+        // Parse subCondition as JSON object (if present)
+        if (this->hasSubCondition && doc["subCondition"].is<JsonObject>())
+        {
+            String subConditionJson;
+            serializeJson(doc["subCondition"], subConditionJson);
+            this->subCondition = RuleCondition(subConditionJson);
+        }
+
+        // Parse effect as JSON object
+        if (doc["effect"].is<JsonObject>())
+        {
+            String effectJson;
+            serializeJson(doc["effect"], effectJson);
+            
+            // Try to determine effect type from the effect object
+            String effectType = doc["effect"]["type"] | "";
+            
+            Serial.print("Effect type: ");
+            Serial.println(effectType);
+            
+            // If no type in effect, try to infer from the rule type or create a default
+            if (effectType.isEmpty())
+            {
+                Serial.println("No effect type found, defaulting to brushless motor");
+                // For now, default to brushless motor effect
+                effect.reset(new RuleEffectBrushlessMotor());
+            }
+            else if (effectType == TYPE_MOTORS)
+            {
+                Serial.println("Creating RuleEffectMotor");
+                effect.reset(new RuleEffectMotor());
+            }
+            else if (effectType == TYPE_BRUSHLESS_MOTORS)
+            {
+                Serial.println("Creating RuleEffectBrushlessMotor");
+                effect.reset(new RuleEffectBrushlessMotor());
+            }
+            else if (effectType == TYPE_SERVOS)
+            {
+                Serial.println("Creating RuleEffectServo");
+                effect.reset(new RuleEffectServo());
+            }
+            else
+            {
+                Serial.print("Unknown effect type: ");
+                Serial.println(effectType);
+                effect.reset();
+            }
+
+            if (effect)
+            {
+                Serial.print("Parsing effect JSON: ");
+                Serial.println(effectJson);
+                effect->fromJson(effectJson);
+            }
+            else
+            {
+                Serial.println("No effect created");
+            }
+        }
+        else
+        {
+            Serial.println("No effect found in JSON or not a JSON object");
+        }
     }
 
     void toJson(String &outJson) const
@@ -218,17 +284,51 @@ struct ControllerRule : public Resource
         doc["isNew"] = this->isNew;
         doc["hasSubCondition"] = this->hasSubCondition;
 
-        String conditionJson, subConditionJson, effectJson;
-        this->condition.toJson(conditionJson);
-        this->subCondition.toJson(subConditionJson);
+        // Create nested JSON objects instead of strings
+        JsonObject conditionObj = doc["condition"].to<JsonObject>();
+        conditionObj["channel"] = this->condition.channel;
+        conditionObj["channelFunction"] = static_cast<int>(this->condition.channelFunction);
+        conditionObj["channelValue"] = this->condition.channelValue;
+        conditionObj["channelFrom"] = this->condition.channelFrom;
+        conditionObj["channelTo"] = this->condition.channelTo;
+
+        JsonObject subConditionObj = doc["subCondition"].to<JsonObject>();
+        subConditionObj["channel"] = this->subCondition.channel;
+        subConditionObj["channelFunction"] = static_cast<int>(this->subCondition.channelFunction);
+        subConditionObj["channelValue"] = this->subCondition.channelValue;
+        subConditionObj["channelFrom"] = this->subCondition.channelFrom;
+        subConditionObj["channelTo"] = this->subCondition.channelTo;
+
         if (this->effect)
         {
-            this->effect->toJson(effectJson);
+            JsonObject effectObj = doc["effect"].to<JsonObject>();
+            effectObj["type"] = this->effect->type();
+            effectObj["resourceId"] = this->effect->resourceId;
+            effectObj["value"] = this->effect->value;
+            effectObj["from"] = this->effect->from;
+            effectObj["to"] = this->effect->to;
+            
+            // Add derived class specific fields based on type
+            String effectType = this->effect->type();
+            if (effectType == TYPE_BRUSHLESS_MOTORS)
+            {
+                RuleEffectBrushlessMotor* brushlessEffect = static_cast<RuleEffectBrushlessMotor*>(this->effect.get());
+                effectObj["direction"] = static_cast<int>(brushlessEffect->direction);
+                effectObj["function"] = static_cast<int>(brushlessEffect->function);
+            }
+            else if (effectType == TYPE_MOTORS)
+            {
+                RuleEffectMotor* motorEffect = static_cast<RuleEffectMotor*>(this->effect.get());
+                effectObj["direction"] = static_cast<int>(motorEffect->direction);
+                effectObj["function"] = static_cast<int>(motorEffect->function);
+            }
+            else if (effectType == TYPE_SERVOS)
+            {
+                RuleEffectServo* servoEffect = static_cast<RuleEffectServo*>(this->effect.get());
+                effectObj["direction"] = static_cast<int>(servoEffect->direction);
+                effectObj["function"] = static_cast<int>(servoEffect->function);
+            }
         }
-
-        doc["condition"] = conditionJson;
-        doc["subCondition"] = subConditionJson;
-        doc["effect"] = effectJson;
 
         serializeJson(doc, outJson);
     }

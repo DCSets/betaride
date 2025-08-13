@@ -10,8 +10,6 @@
 
 struct PS5ControllerConfig : public ControllerConfig
 {
-    ControllerType getControllerType() const override { return ControllerType::PS5; }
-
     int sdaPin;
     int sclPin;
     int i2cAddress;
@@ -28,6 +26,7 @@ struct PS5ControllerConfig : public ControllerConfig
         }
 
         this->isNew = false;
+        this->controllerType = ControllerType::PS5;
         strncpy(this->id, doc["id"], sizeof(this->id));
         strncpy(this->name, doc["name"], sizeof(this->name));
         strncpy(this->type, doc["type"], sizeof(this->type));
@@ -43,6 +42,7 @@ struct PS5ControllerConfig : public ControllerConfig
 
         doc["id"] = this->id;
         doc["name"] = this->name;
+        doc["controllerType"] = this->controllerType;
         doc["type"] = this->type;
         doc["sdaPin"] = this->sdaPin;
         doc["sclPin"] = this->sclPin;

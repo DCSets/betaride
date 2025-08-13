@@ -14,7 +14,7 @@ class ELRSController;
 
 struct ControllerConfig : Resource
 {
-    virtual ControllerType getControllerType() const = 0;
+    ControllerType controllerType;
 
     virtual ~ControllerConfig() {}
 

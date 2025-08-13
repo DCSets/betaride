@@ -6,8 +6,8 @@
 #include <ConfiguratorSerial.h>
 #include <App.h>
 
-ConfiguratorSerial * serial = nullptr;
-ConfigStore * store = nullptr;
+ConfiguratorSerial *serial = nullptr;
+ConfigStore *store = nullptr;
 App *app = nullptr;
 
 void setup()
@@ -17,7 +17,16 @@ void setup()
   store = new ConfigStore();
   serial = new ConfiguratorSerial(store);
 
+  String json = "{\"id\":\"cr_me752d6f\",\"isNew\":true,\"name\":\"New rule\",\"type\":\"cr\","
+  "\"condition\":{\"channel\":\"0\",\"channelFunction\":\"1\"},"
+  "\"effect\":{\"direction\":\"1\",\"function\":\"3\",\"resourceId\":\"bm_me752947\",\"type\":\"bm\"},"
+  "\"subCondition\":{\"channel\":\"4\",\"channelFunction\":\"3\",\"channelValue\":1500},"
+  "\"hasSubCondition\":true}";
+  ControllerRule rule(json);
+  store->saveControllerRulesConfig(&rule, 1);
 
+  Serial.println("Printing resources");
+  store->printResourcesConfgs();
 
   // config = new CarConfig();
   // app = new App(config);
@@ -57,4 +66,3 @@ void loop()
 {
   serial->loop();
 }
-
