@@ -9,7 +9,7 @@ ConfigStore::ConfigStore()
 
     this->loadMotorsConfig();
     this->loadBrushlessMotorsConfig();
-    this->loadController();
+    this->loadControllerConfig();
     this->loadControllerRulesConfig();
 
     if (DEBUG)
@@ -125,29 +125,32 @@ void ConfigStore::printResourcesConfgs()
     this->printConfigs(_controllerRules, MAX_RULES);
 }
 
-ControllerConfig* ConfigStore::getControllerConfig()
-{
-    // Check if ELRS config exists (has non-empty id)
-    if (strlen(_elrsConfig[0].id) > 0)
+void ConfigStore::saveControllerConfig(ControllerConfig *controllerConfig) {
+    this->cleanEntity(TYPE_CONTROLLER, 1);
+    String idsJoined;
     {
-        return &_elrsConfig[0];
+        ControllerConfig *cfg  = controllerConfig;
+        if (idsJoined.length() > 0)
+        {
+            idsJoined += ",";
+        }
+        idsJoined += cfg->id;
+        // Convert struct to JSON string and save it to prefs
+        String jsonString;
+        cfg->toJson(jsonString);
+        if(DEBUG) {
+            Serial.println("Saving config: " + String(cfg->id) + " " + jsonString);
+        }
+        _prefs.putString(cfg->id, jsonString);
     }
-    
-    // Check if PS5 config exists (has non-empty id)
-    if (strlen(_ps5Config[0].id) > 0)
-    {
-        return &_ps5Config[0];
-    }
-    
-    return nullptr;
+
+    _prefs.putString(TYPE_CONTROLLER, idsJoined);
+    if (DEBUG)
+        Serial.print(String(TYPE_CONTROLLER) + ". IDs: " + idsJoined);
 }
 
-void ConfigStore::loadController()
+ControllerConfig* ConfigStore::loadControllerConfig()
 {
-    // Use default constructors instead of memset to avoid vtable corruption
-    _elrsConfig[0] = ELRSConfig();
-    _ps5Config[0] = PS5ControllerConfig();
-
     String ids[1];
     this->getIds(TYPE_CONTROLLER, ids, 1);
     
@@ -155,7 +158,7 @@ void ConfigStore::loadController()
     {
         if (DEBUG)
             Serial.println("No controller id found");
-        return;
+        return _controllerConfig;
     }
 
     if (DEBUG)
@@ -167,7 +170,7 @@ void ConfigStore::loadController()
     {
         if (DEBUG)
             Serial.printf("No JSON data found for controller config %s\n", ids[0].c_str());
-        return;
+        return _controllerConfig;
     }
 
     // Parse JSON to determine controller type
@@ -179,21 +182,24 @@ void ConfigStore::loadController()
     
     if (controllerType == ControllerType::ELRS)
     {
-        _elrsConfig[0] = ELRSConfig(jsonString);
+        _controllerConfig = new ELRSConfig(jsonString);
     }
     else if (controllerType == ControllerType::PS5)
     {
-        _ps5Config[0] = PS5ControllerConfig(jsonString);
+        _controllerConfig = new PS5ControllerConfig(jsonString);
     }
     else
     {
         if (DEBUG)
             Serial.printf("Unknown controller type: %d\n", controllerType);
-        return;
+
+        return _controllerConfig;
     }
 
     if (DEBUG)
     {
         Serial.println("Controller config loaded: " + ids[0] + " (Type: " + controllerType + ")");
     }
+
+    return _controllerConfig;
 }

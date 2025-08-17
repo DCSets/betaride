@@ -40,12 +40,8 @@ void ConfiguratorSerial::loop()
         memset(brushlessMotors, 0, sizeof(brushlessMotors));
         memset(controllerRules, 0, sizeof(controllerRules));
 
-        // Single ELRS controller config
-        // Memset corrupts the vtable, so we don't use it. TODO: implement proper reset
-        static ELRSConfig elrsConfig[1];
-        static PS5ControllerConfig ps5Config[1];
-        bool hasElrsConfig = false;
-        bool hasPs5Config = false;
+        static ControllerConfig *controllerConfig;
+        bool hasControllerConfig = false;
 
 
         for (const auto &kv : this->_resources)
@@ -76,25 +72,20 @@ void ConfiguratorSerial::loop()
                 brushlessMotors[brushlessCount++] = BrushlessMotorConfig(json);
             }
 
-            if (type == TYPE_CONTROLLER)
+            if (type == TYPE_CONTROLLER && !hasControllerConfig)
             {
                 JsonDocument doc;
                 validateJsonHelper(json.c_str(), doc, "Controller config");
-                if (hasPs5Config || hasElrsConfig)
-                {
-                    continue;
-                }
                 int controllerTypeValue = doc["controllerType"];
                 if (controllerTypeValue == ControllerType::ELRS)
                 {
-                    elrsConfig[0] = ELRSConfig(json);
-                    hasElrsConfig = true;
+                    controllerConfig = new ELRSConfig(json);
                 }
                 if (controllerTypeValue == ControllerType::PS5)
                 {
-                    ps5Config[0] = PS5ControllerConfig(json);
-                    hasPs5Config = true;
+                    controllerConfig = new PS5ControllerConfig(json);
                 }
+                hasControllerConfig = true;
             }
 
             if (type == TYPE_CONTROLLER_RULES && rulesCount < MAX_RULES)
@@ -107,11 +98,9 @@ void ConfiguratorSerial::loop()
             _store->saveMotorsConfig(motors, motorsCount);
         if (brushlessCount > 0)
             _store->saveBrushlessMotorsConfig(brushlessMotors, brushlessCount);
-        if (hasElrsConfig) {
-            _store->saveELRSConfig(elrsConfig, 1);
+        if (hasControllerConfig) {
+            _store->saveControllerConfig(controllerConfig);
         }
-        if (hasPs5Config)
-            _store->savePS5Config(ps5Config, 1);
         if (rulesCount > 0) {
             Serial.println("Saving rules");
             _store->saveControllerRulesConfig(controllerRules, rulesCount);
