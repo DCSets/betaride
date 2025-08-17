@@ -90,6 +90,14 @@ String ConfigStore::joinIds(const String *ids, int maxCount)
     return result;
 }
 
+void ConfigStore::clearEntities()
+{
+    this->cleanEntity(TYPE_MOTORS, MAX_MOTORS);
+    this->cleanEntity(TYPE_BRUSHLESS_MOTORS, MAX_BRUSHLESS_MOTORS);
+    this->cleanEntity(TYPE_CONTROLLER, 1);
+    this->cleanEntity(TYPE_CONTROLLER_RULES, MAX_RULES);
+}
+
 void ConfigStore::printResourcesConfgs()
 {
     Serial.println("=== Brushless Motors ===");
@@ -97,9 +105,6 @@ void ConfigStore::printResourcesConfgs()
     
     Serial.println("=== Motors ===");
     this->printConfigs(_motorsConfig, MAX_MOTORS);
-    
-    Serial.println("=== Controller Rules ===");
-    this->printConfigs(_controllerRules, MAX_RULES);
     
     Serial.println("=== Controller ===");
     ControllerConfig* controllerConfig = this->getControllerConfig();
@@ -114,7 +119,10 @@ void ConfigStore::printResourcesConfgs()
         Serial.println("No controller config found");
     }
     
-    
+    // It should be last because effect relay on other resources
+    // TODO: probably the separate command/indicator that resources are printed should be added as well
+    Serial.println("=== Controller Rules ===");
+    this->printConfigs(_controllerRules, MAX_RULES);
 }
 
 ControllerConfig* ConfigStore::getControllerConfig()

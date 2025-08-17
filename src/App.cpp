@@ -1,18 +1,34 @@
 #include <App.h>
-#include <ELRSController.h>
+
 
 App::App(ConfigStore *store) : _store(*store), _brushlessMotorCount(0), _controllerRulesCount(0), _controller(nullptr)
 {
-    for (int i = 0; i < MAX_MOTORS; i++)
-    {
-        _brushlessMotors[i] = nullptr;
-    }
+    this->resetResources();
 }
 
 App::~App()
 {
-    // Clean up dynamically allocated BrushlessMotor instances
+    this->resetResources();
+}
+
+void App::resetController() {
+    if (_controller != nullptr)
+    {
+        delete _controller;
+        _controller = nullptr;
+    }
+}
+
+void App::resetResources() {
     for (int i = 0; i < MAX_MOTORS; i++)
+    {
+        if (_motors[i] != nullptr)
+        {
+            delete _motors[i];
+            _motors[i] = nullptr;
+        }
+    }
+    for (int i = 0; i < MAX_BRUSHLESS_MOTORS; i++)
     {
         if (_brushlessMotors[i] != nullptr)
         {
@@ -20,11 +36,7 @@ App::~App()
             _brushlessMotors[i] = nullptr;
         }
     }
-    if (_controller != nullptr)
-    {
-        delete _controller;
-        _controller = nullptr;
-    }
+    this->resetController();
 }
 
 void App::loadResources()
@@ -99,29 +111,24 @@ void App::loadControllerRules()
 void App::loadController()
 {
     // Refresh from NVS to reflect any recent saves
-    _store.loadELRSConfig();
+    // _store.loadELRSConfig();
+    // this->resetController();
 
-    if (_controller != nullptr)
-    {
-        delete _controller;
-        _controller = nullptr;
-    }
+    // ControllerConfig 
+    // ELRSConfig *controllers = _store.getELRSConfig();
+    // for (int i = 0; i < MAX_CONTROLLERS; i++)
+    // { 
+    //     if (strlen(controllers[i].id) == 0)
+    //         continue;
 
-    // Find first ELRS controller config and initialize controller
-        ELRSConfig *controllers = _store.getELRSConfig();
-    for (int i = 0; i < MAX_CONTROLLERS; i++)
-    { 
-        if (strlen(controllers[i].id) == 0)
-            continue;
-
-        // if (controllers[i].controllerType == ControllerType::ELRS)
-        // {
-            ELRSConfig *elrsConfig = reinterpret_cast<ELRSConfig *>(&controllers[i]);
-            _controller = new ELRSController(*elrsConfig);
-            _controller->begin();
-            break;
-        // }
-    }
+    //     // if (controllers[i].controllerType == ControllerType::ELRS)
+    //     // {
+    //         ELRSConfig *elrsConfig = reinterpret_cast<ELRSConfig *>(&controllers[i]);
+    //         _controller = new ELRSController(*elrsConfig);
+    //         _controller->begin();
+    //         break;
+    //     // }
+    // }
 }
 
 BrushlessMotor *App::findBrushlessById(const char *id)

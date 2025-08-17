@@ -1,6 +1,7 @@
 #ifndef CONFIGURATOR_SERIAL_H
 #define CONFIGURATOR_SERIAL_H
 
+#include "esp_system.h"
 #include <vector>
 #include <string>
 #include <Arduino.h>
@@ -13,8 +14,11 @@
 class ConfiguratorSerial
 {
 public:
-    ConfiguratorSerial(ConfigStore *store){
+    ConfiguratorSerial(ConfigStore *store)
+    {
         this->_store = store;
+        if (esp_reset_reason() == ESP_RST_SW)
+            Serial.printf("[%s@%d]\n", _CMD_RESTART, 1);
     };
     boolean isConnected();
 
@@ -30,37 +34,47 @@ private:
     std::vector<std::pair<std::string, std::string>> _resources;
     ConfigStore *_store;
 
-    void addResource(const std::string& key, const std::string& value) {
+    void addResource(const std::string &key, const std::string &value)
+    {
         _resources.push_back(std::make_pair(key, value));
     }
-    const std::pair<std::string, std::string>& getResource(int index) const {
+    const std::pair<std::string, std::string> &getResource(int index) const
+    {
         return _resources[index];
     }
-    void clear() {
+    void clear()
+    {
         _resources.clear();
     }
     // Iterators
-    std::vector<std::pair<std::string, std::string>>::iterator begin() {
+    std::vector<std::pair<std::string, std::string>>::iterator begin()
+    {
         return _resources.begin();
     }
 
-    std::vector<std::pair<std::string, std::string>>::iterator end() {
+    std::vector<std::pair<std::string, std::string>>::iterator end()
+    {
         return _resources.end();
     }
 
-    std::vector<std::pair<std::string, std::string>>::const_iterator begin() const {
+    std::vector<std::pair<std::string, std::string>>::const_iterator begin() const
+    {
         return _resources.begin();
     }
 
-    std::vector<std::pair<std::string, std::string>>::const_iterator end() const {
+    std::vector<std::pair<std::string, std::string>>::const_iterator end() const
+    {
         return _resources.end();
     }
 
     static constexpr int MAX_CHUNKS = 5;
+    static constexpr const char *_PONG_HASH = "RC_CONFIGURATOR";
     static constexpr const char *_CMD_SERIAL = "serial";
     static constexpr const char *_CMD_REQUEST_RESOURCES = "rrequest";
     static constexpr const char *_CMD_TRANSFER = "transfer";
     static constexpr const char *_CMD_STORE_RESOURCES = "store";
+    static constexpr const char *_CMD_CLEAR_RESOURCES = "clear";
+    static constexpr const char *_CMD_RESTART = "restart";
 };
 
 #endif

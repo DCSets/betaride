@@ -25,6 +25,9 @@ void ConfiguratorSerial::loop()
         {
             Serial.println("Processing stored configs: ");
         }
+        // Clear all entities before saving new ones to avoid complex update logic
+        this->_store->clearEntities();
+        
         static MotorConfig motors[MAX_MOTORS];
         static BrushlessMotorConfig brushlessMotors[MAX_BRUSHLESS_MOTORS];
         static ControllerRule controllerRules[MAX_RULES];
@@ -123,6 +126,10 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
     if (baseCommand == _CMD_SERIAL)
     {
         this->_isConnected = (chunks[1] == "1") ? true : false;
+        if (this->_isConnected) {
+            // Pong to let configurator know that the serial is connected
+            Serial.printf("[%s@%s]\n", _CMD_SERIAL, _PONG_HASH );
+        }
         if (DEBUG)
         {
             Serial.println("Serial connected: " + String(this->_isConnected));
@@ -136,6 +143,23 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
             Serial.println("Serial transfer: " + String(this->_configTransfer));
         }
     }
+    else if (baseCommand == _CMD_CLEAR_RESOURCES)
+    {
+        this->_store->clearEntities();
+        if (DEBUG)
+        {
+            Serial.println("Clear all resources");
+        }
+    }
+    else if (baseCommand == _CMD_RESTART)
+    {
+        if (DEBUG)
+        {
+            Serial.println("Restarting...");
+        }
+        delay(500);
+        ESP.restart();
+    }
     else if (baseCommand == _CMD_REQUEST_RESOURCES)
     {
         if (DEBUG)
@@ -143,6 +167,7 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
             Serial.println("Requested resources:");
         }
         _store->printResourcesConfgs();
+        Serial.printf("[%s@1]\n", this->_CMD_REQUEST_RESOURCES);
     }
     else if (baseCommand == _CMD_STORE_RESOURCES)
     {
@@ -183,6 +208,7 @@ void ConfiguratorSerial::printElrsChannels(int channels[16])
 {
     for (int i = 0; i < 16; i++)
     {
-        Serial.printf("[rx:%d:%d]\n", i + 1, channels[i]);
+        // rx@CHANNEL_ID@CHANNEL_VALUE
+        Serial.printf("[rx@%d@%d]\n", i + 1, channels[i]);
     }
 }

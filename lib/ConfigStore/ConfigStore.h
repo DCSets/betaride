@@ -35,8 +35,8 @@ public:
     
     MotorConfig *loadMotorsConfig() { return this->loadConfig(_motorsConfig, TYPE_MOTORS, "motors"); };
     BrushlessMotorConfig *loadBrushlessMotorsConfig() { return this->loadConfig(_brushlessMotorsConfig, TYPE_BRUSHLESS_MOTORS, "brushless motors"); };
-    ELRSConfig *loadELRSConfig() { return this->loadConfig(_elrsConfig, TYPE_CONTROLLER, "Elrs controller"); };
     ControllerRule *loadControllerRulesConfig() { return this->loadConfig(_controllerRules, TYPE_CONTROLLER_RULES, "Controller rules"); };
+    ELRSConfig *loadELRSConfig() { return this->loadConfig(_elrsConfig, TYPE_CONTROLLER, "Elrs controller"); };
 
     MotorConfig *getMotorsConfig() { return _motorsConfig; };
     BrushlessMotorConfig *getBrushlessMotorsConfig() { return _brushlessMotorsConfig; };
@@ -47,6 +47,7 @@ public:
     // Generic method to get the actual stored controller config
     ControllerConfig* getControllerConfig();
 
+    void clearEntities();
     void printResourcesConfgs();
 
 private:

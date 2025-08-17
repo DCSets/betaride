@@ -5,6 +5,7 @@
 #include <ConfigStore.h>
 #include <ControllerRules.h>
 #include <BrushlessMotor.h>
+#include <Motor.h>
 #include <Controller.h>
 
 class App
@@ -20,6 +21,7 @@ private:
     ConfigStore _store;
 
     BrushlessMotor* _brushlessMotors[MAX_BRUSHLESS_MOTORS];
+    Motor* _motors[MAX_MOTORS];
     ControllerRule _controllerRules[MAX_RULES];
     
     int _brushlessMotorCount;
@@ -27,6 +29,9 @@ private:
     Controller* _controller;
 
 
+
+    void resetController();
+    void resetResources();
 
     void loadMotors();
     void loadControllerRules();
