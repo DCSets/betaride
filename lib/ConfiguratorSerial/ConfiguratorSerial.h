@@ -20,7 +20,8 @@ public:
         if (esp_reset_reason() == ESP_RST_SW)
             Serial.printf("[%s@%d]\n", _CMD_RESTART, 1);
     };
-    boolean isConnected();
+    boolean isConnected() { return this->_isConnected; };
+    boolean isControllerTesting() { return this->_controllerTesting; };
 
     void loop();
     int parseCommand(String received, String outputChunks[], int maxChunks);
@@ -29,6 +30,7 @@ public:
     void printElrsChannels(int channels[16]);
 
 private:
+    boolean _controllerTesting = false;
     boolean _isConnected = false;
     boolean _configTransfer = false;
     std::vector<std::pair<std::string, std::string>> _resources;
@@ -75,6 +77,7 @@ private:
     static constexpr const char *_CMD_STORE_RESOURCES = "store";
     static constexpr const char *_CMD_CLEAR_RESOURCES = "clear";
     static constexpr const char *_CMD_RESTART = "restart";
+    static constexpr const char *_CMD_TEST_CONTROLLER = "tcontroller";
 };
 
 #endif

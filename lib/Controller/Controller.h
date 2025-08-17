@@ -28,6 +28,7 @@ class Controller
 public:
     virtual ~Controller() {}
     virtual void getAllChannels(int *outChannels) = 0;
+    virtual void printAllChannels() = 0;
     virtual void begin() = 0;
     virtual void loop() = 0;
 

@@ -34,3 +34,17 @@ void ELRSController::getAllChannels (int* outChannels)
         outChannels[ChannelNum - 1] = this->_crsf.getChannel(ChannelNum);
     }
 }
+
+void ELRSController::printAllChannels()
+{
+    static unsigned long lastPrint = 0;
+    unsigned long now = millis();
+
+    if (now - lastPrint >= CHANNELS_PRINT_RATE) {
+        for (int ChannelNum = 1; ChannelNum <= 16; ChannelNum++)
+        {
+            Serial.printf("[rx@%d@%d]", ChannelNum - 1, this->_crsf.getChannel(ChannelNum));
+        }
+        lastPrint = now;
+    }
+}

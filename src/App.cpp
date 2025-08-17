@@ -4,6 +4,7 @@
 App::App(ConfigStore *store) : _store(*store), _brushlessMotorCount(0), _controllerRulesCount(0), _controller(nullptr)
 {
     this->resetResources();
+    this->loadResources();
 }
 
 App::~App()
@@ -41,9 +42,9 @@ void App::resetResources() {
 
 void App::loadResources()
 {
+    this->loadController();
     // this->loadMotors();
     // this->loadElrsRules();
-    // this->loadController();
 
     // // Log how many resources were loaded
     // Serial.print("Loaded resources -> motors: ");
@@ -111,24 +112,15 @@ void App::loadControllerRules()
 void App::loadController()
 {
     // Refresh from NVS to reflect any recent saves
-    // _store.loadELRSConfig();
-    // this->resetController();
+    _store.loadControllerConfig();
+    this->resetController();
 
-    // ControllerConfig 
-    // ELRSConfig *controllers = _store.getELRSConfig();
-    // for (int i = 0; i < MAX_CONTROLLERS; i++)
-    // { 
-    //     if (strlen(controllers[i].id) == 0)
-    //         continue;
-
-    //     // if (controllers[i].controllerType == ControllerType::ELRS)
-    //     // {
-    //         ELRSConfig *elrsConfig = reinterpret_cast<ELRSConfig *>(&controllers[i]);
-    //         _controller = new ELRSController(*elrsConfig);
-    //         _controller->begin();
-    //         break;
-    //     // }
-    // }
+    ControllerConfig *controllerConfig = _store.getControllerConfig();
+    if (controllerConfig == nullptr)
+        return;
+    
+    _controller = ControllerFactory::createControllerFromConfig(*controllerConfig);
+    _controller->begin();
 }
 
 BrushlessMotor *App::findBrushlessById(const char *id)
@@ -147,59 +139,67 @@ BrushlessMotor *App::findBrushlessById(const char *id)
     return nullptr;
 }
 
+void App::testController() {
+    if (_controller == nullptr)
+        return;
+
+    _controller->loop();
+    _controller->printAllChannels();
+
+}
 void App::loop()
 {
     // Quick checks
-    if (_controller == nullptr)
-        return;
-    if (_controllerRulesCount == 0)
-        return;
+    // if (_controller == nullptr)
+    //     return;
+    // if (_controllerRulesCount == 0)
+    //     return;
 
-    // Update controller state
-    _controller->loop();
+    // // Update controller state
+    // _controller->loop();
 
-    int channels[16] = {0};
-    _controller->getAllChannels(channels);
+    // int channels[16] = {0};
+    // _controller->getAllChannels(channels);
 
-    // Evaluate rules
-    for (int i = 0; i < _controllerRulesCount && i < MAX_RULES; i++)
-    {
-        ControllerRule &rule = _controllerRules[i];
-        if (strlen(rule.id) == 0)
-            continue;
+    // // Evaluate rules
+    // for (int i = 0; i < _controllerRulesCount && i < MAX_RULES; i++)
+    // {
+    //     ControllerRule &rule = _controllerRules[i];
+    //     if (strlen(rule.id) == 0)
+    //         continue;
 
-            auto evalCond = [&](const RuleCondition &c)
-        {
-            // channel expected as string number like "1".."16"
-            int chIndex = c.channel;
-            if (chIndex < 1 || chIndex > 16)
-                return false;
-            int value = channels[chIndex - 1];
-            switch (c.channelFunction)
-            {
-            case ChannelFunction::FULL:
-                return true;
-            case ChannelFunction::RANGE:
-                return value >= c.channelFrom && value <= c.channelTo;
-            case ChannelFunction::EXACT:
-                return value == c.channelValue;
-            case ChannelFunction::ABOVE:
-                return value > c.channelValue;
-            case ChannelFunction::BELOW:
-                return value < c.channelValue;
-            case ChannelFunction::ABOVE_OR_EQUAL:
-                return value >= c.channelValue;
-            case ChannelFunction::BELOW_OR_EQUAL:
-                return value <= c.channelValue;
-            default:
-                return false;
-            }
-        };
+    //         auto evalCond = [&](const RuleCondition &c)
+    //     {
+    //         // channel expected as string number like "1".."16"
+    //         int chIndex = c.channel;
+    //         if (chIndex < 1 || chIndex > 16)
+    //             return false;
+    //         int value = channels[chIndex - 1];
+    //         switch (c.channelFunction)
+    //         {
+    //         case ChannelFunction::FULL:
+    //             return true;
+    //         case ChannelFunction::RANGE:
+    //             return value >= c.channelFrom && value <= c.channelTo;
+    //         case ChannelFunction::EXACT:
+    //             return value == c.channelValue;
+    //         case ChannelFunction::ABOVE:
+    //             return value > c.channelValue;
+    //         case ChannelFunction::BELOW:
+    //             return value < c.channelValue;
+    //         case ChannelFunction::ABOVE_OR_EQUAL:
+    //             return value >= c.channelValue;
+    //         case ChannelFunction::BELOW_OR_EQUAL:
+    //             return value <= c.channelValue;
+    //         default:
+    //             return false;
+    //         }
+    //     };
 
-        if (!evalCond(rule.condition))
-            continue;
-        if (rule.hasSubCondition && !evalCond(rule.subCondition))
-            continue;
+    //     if (!evalCond(rule.condition))
+    //         continue;
+    //     if (rule.hasSubCondition && !evalCond(rule.subCondition))
+    //         continue;
 
         // Apply effect
         // switch (rule.effect->type())
@@ -269,14 +269,14 @@ void App::loop()
         // default:
         //     break;
         // }
-    }
+    // }
 
-    // Tick motors after applying effects
-    for (int i = 0; i < MAX_MOTORS; i++)
-    {
-        if (_brushlessMotors[i] != nullptr)
-        {
-            _brushlessMotors[i]->loop();
-        }
-    }
+    // // Tick motors after applying effects
+    // for (int i = 0; i < MAX_MOTORS; i++)
+    // {
+    //     if (_brushlessMotors[i] != nullptr)
+    //     {
+    //         _brushlessMotors[i]->loop();
+    //     }
+    // }
 }

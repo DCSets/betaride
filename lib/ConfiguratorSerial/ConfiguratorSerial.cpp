@@ -1,10 +1,5 @@
 #include "ConfiguratorSerial.h"
 
-boolean ConfiguratorSerial::isConnected()
-{
-    return this->_isConnected;
-}
-
 void ConfiguratorSerial::loop()
 {
     if (Serial.available())
@@ -163,6 +158,14 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
         String resourceId = chunks[1];
         String resourceConfig = chunks[2];
         this->addResource(resourceId.c_str(), resourceConfig.c_str());
+    }
+    else if (baseCommand == _CMD_TEST_CONTROLLER)
+    {
+        this->_controllerTesting = (chunks[1] == "1") ? true : false;
+        if (DEBUG)
+        {
+            Serial.println("Controller testing: " + String(this->_controllerTesting));
+        }
     }
 }
 

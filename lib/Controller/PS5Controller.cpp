@@ -58,3 +58,8 @@ void PS5Controller::getAllChannels(int* outChannels)
     // outChannels[5] = ps5.getRightTrigger();  // Right trigger
     // etc...
 }
+
+void PS5Controller::printAllChannels()
+{
+    Serial.println("PS5 Controller: Mock channel data");
+}

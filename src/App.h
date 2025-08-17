@@ -13,20 +13,23 @@ class App
 public:
     App(ConfigStore* store);
     ~App();
+
     void loadResources();
     void loop();
+    void testController();
+    
     ConfigStore& getStore() { return _store; }
     
 private:
     ConfigStore _store;
 
-    BrushlessMotor* _brushlessMotors[MAX_BRUSHLESS_MOTORS];
-    Motor* _motors[MAX_MOTORS];
-    ControllerRule _controllerRules[MAX_RULES];
+    BrushlessMotor* _brushlessMotors[MAX_BRUSHLESS_MOTORS] = {nullptr};
+    Motor* _motors[MAX_MOTORS] = {nullptr};
+    ControllerRule _controllerRules[MAX_RULES] = {};
     
     int _brushlessMotorCount;
     int _controllerRulesCount;
-    Controller* _controller;
+    Controller* _controller = nullptr;
 
 
 

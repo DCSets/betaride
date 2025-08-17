@@ -16,7 +16,7 @@ void setup()
 
   store = new ConfigStore();
   serial = new ConfiguratorSerial(store);
-
+  app = new App(store);
 
   // config = new CarConfig();
   // app = new App(config);
@@ -55,4 +55,10 @@ void setup()
 void loop()
 {
   serial->loop();
+  if(!serial->isConnected()) {
+    app->loop();
+  }
+  if(serial->isControllerTesting()) {
+    app->testController();
+  }
 }

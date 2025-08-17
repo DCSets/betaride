@@ -71,6 +71,7 @@ public:
     void begin() override;
     void loop() override;
     void getAllChannels(int *outChannels) override;
+    void printAllChannels() override;
 };
 
 #endif
