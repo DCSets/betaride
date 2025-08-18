@@ -1,6 +1,6 @@
 #include "ELRSController.h"
 
-void ELRSController::begin ()
+void ELRSController::begin()
 {
     if (!this->_ready)
     {
@@ -17,7 +17,7 @@ void ELRSController::begin ()
     }
 }
 
-void ELRSController::loop ()
+void ELRSController::loop()
 {
     if (this->_ready)
     {
@@ -25,9 +25,7 @@ void ELRSController::loop ()
     }
 }
 
-
-
-void ELRSController::getAllChannels (int* outChannels)
+void ELRSController::getAllChannels(int *outChannels)
 {
     for (int ChannelNum = 1; ChannelNum <= 16; ChannelNum++)
     {
@@ -37,14 +35,13 @@ void ELRSController::getAllChannels (int* outChannels)
 
 void ELRSController::printAllChannels()
 {
-    static unsigned long lastPrint = 0;
-    unsigned long now = millis();
-
-    if (now - lastPrint >= CHANNELS_PRINT_RATE) {
-        for (int ChannelNum = 1; ChannelNum <= 16; ChannelNum++)
-        {
-            Serial.printf("[rx@%d@%d]", ChannelNum - 1, this->_crsf.getChannel(ChannelNum));
+    static int channels[16] = {-1};
+    for (int ChannelNum = 1; ChannelNum <= 16; ChannelNum++)
+    {
+        int value = this->_crsf.getChannel(ChannelNum);
+        if(channels[ChannelNum - 1] != value) {
+            Serial.printf("[rx@%d@%d]\n", ChannelNum - 1, value);
+            channels[ChannelNum - 1] = value;
         }
-        lastPrint = now;
     }
 }

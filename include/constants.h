@@ -19,7 +19,7 @@ constexpr int MAX_CONTROLLERS = 1;
 constexpr int MAX_RULES = 20;
 
 
-constexpr int CHANNELS_PRINT_RATE = 50;
+constexpr int CHANNELS_PRINT_RATE = 100;
 // ELRS Channels output
 constexpr int MIN_STICK_VALUE = 990;
 constexpr int MAX_STICK_VALUE = 2011;
