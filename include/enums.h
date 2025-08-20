@@ -38,4 +38,12 @@ enum class MotorFunction
     SPEED_FULL = 3,
 };
 
+enum class ServoFunction
+{
+    UNSPECIFIED = -1,
+    ANGLE = 1,
+    ANGLE_RANGE = 2,
+    ANGLE_FULL = 3,
+};
+
 #endif

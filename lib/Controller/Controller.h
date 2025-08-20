@@ -31,7 +31,8 @@ public:
     virtual void printAllChannels() = 0;
     virtual void begin() = 0;
     virtual void loop() = 0;
-    virtual int getChannelPercent(int channel, int min = 0, int max = 100) = 0;
+    virtual int getChannelPercent(int channel) = 0;
+    virtual int getChannelPercent(int channel, int min, int max) = 0;
     virtual bool isConnected() { return false; }
     int getChannel(int channel) { 
         auto it = _channels.find(channel);

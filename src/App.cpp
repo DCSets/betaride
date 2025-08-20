@@ -28,21 +28,27 @@ void App::loop()
     _controller->loop();
     for(auto &rule : _ruleEngine->rules) {
         if(!_ruleEngine->checkCondition(rule.condition)) {
-            Serial.println("Rule condition not met");
-            delay(1000);
             continue;
         }
         if(rule.hasSubCondition && !_ruleEngine->checkCondition(rule.subCondition)) {
-            Serial.println("Rule subcondition not met");
-            delay(1000);
             continue;
         }
 
-        Serial.println("All good!");
         String resourceId = rule.effect->resourceId;
+        if(rule.effect->type() == TYPE_SERVOS) {
+            auto it = _servos.find(rule.effect->resourceId);
+            if(it != _servos.end()) {
+                int angle = _ruleEngine->getServoAngle(rule, it->second);
+                if(angle != -1) {
+                    it->second->setAngle(angle);
+                }
+            } 
+        }
     }
 
-    
+    for(auto &servo : _servos) {
+        servo.second->loop();
+    }
     // // Tick motors after applying effects
     // for (int i = 0; i < MAX_MOTORS; i++)
     // {
@@ -58,6 +64,8 @@ void App::loadResources()
 {
     this->loadController();
     this->loadControllerRules();
+    // this->loadMotors();
+    this->loadServos();
 }
 
 void App::resetController()
@@ -77,6 +85,9 @@ void App::resetResources()
     for (auto& pair : _motors) {
         delete pair.second;
     }
+    for (auto& pair : _servos) {
+        delete pair.second;
+    }
     if (_ruleEngine != nullptr)
     {
         delete _ruleEngine;
@@ -85,7 +96,7 @@ void App::resetResources()
 
     _brushlessMotors.clear();
     _motors.clear();
-
+    _servos.clear();
     this->resetController();
 }
 
@@ -142,4 +153,26 @@ void App::loadMotors()
             _brushlessMotors[configs[i].id] = new BrushlessMotor(configs[i]);
         }
     }
+}
+
+void App::loadServos()
+{
+    // Get the loaded servos configs
+    ServoConfig *configs = _store.getServosConfig();
+    for (auto& pair : _servos) {
+        delete pair.second;
+    }
+    _servos.clear();
+
+    // Initialize Servos instances for each valid config
+    for (int i = 0; i < MAX_SERVOS; i++)
+    {
+        // Check if this config slot has a valid ID (not empty)
+        if (strlen(configs[i].id) > 0)
+        {
+            _servos[configs[i].id] = new Servo(configs[i]);
+        }
+    }
+
+    Serial.println("Servos loaded: " + String(_servos.size()));
 }

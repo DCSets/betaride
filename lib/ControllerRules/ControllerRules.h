@@ -137,9 +137,7 @@ struct RuleEffectBrushlessMotor : public RuleEffect
 
 struct RuleEffectServo : public RuleEffect
 {
-    // TODO: It's a mock (!)
-    MotorDirection direction;
-    MotorFunction function;
+    ServoFunction function;
 
     const char *type() const override { return TYPE_SERVOS; }
 
@@ -152,8 +150,7 @@ struct RuleEffectServo : public RuleEffect
             this->value = doc["value"] | -1;
             this->from = doc["from"] | -1;
             this->to = doc["to"] | -1;
-            this->direction = static_cast<MotorDirection>(doc["direction"] | -1);
-            this->function = static_cast<MotorFunction>(doc["function"] | -1);
+            this->function = static_cast<ServoFunction>(doc["function"] | -1);
         }
     }
     void toJson(String &outJson) const override
@@ -166,9 +163,6 @@ struct RuleEffectServo : public RuleEffect
         doc["value"] = this->value;
         doc["from"] = this->from;
         doc["to"] = this->to;
-        
-        // Add derived class data
-        doc["direction"] = static_cast<int>(this->direction);
         doc["function"] = static_cast<int>(this->function);
         
         serializeJson(doc, outJson);
@@ -312,7 +306,6 @@ struct ControllerRule : public Resource
             else if (effectType == TYPE_SERVOS)
             {
                 RuleEffectServo* servoEffect = static_cast<RuleEffectServo*>(this->effect.get());
-                effectObj["direction"] = static_cast<int>(servoEffect->direction);
                 effectObj["function"] = static_cast<int>(servoEffect->function);
             }
         }

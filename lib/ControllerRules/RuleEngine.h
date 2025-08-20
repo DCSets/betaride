@@ -6,6 +6,7 @@
 #include <vector>
 #include <constants.h>
 #include <enums.h>
+#include <Servo.h>
 
 class RuleEngine {
     public:
@@ -27,6 +28,7 @@ class RuleEngine {
             return MotorDirection::UNSPECIFIED;
         }
         int getMotorSpeed(const ControllerRule& rule);
+        int getServoAngle(const ControllerRule& rule, Servo* servo);
     
     private:
         Controller *_controller;

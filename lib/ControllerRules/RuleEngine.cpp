@@ -2,8 +2,8 @@
 
 bool RuleEngine::checkCondition(const RuleCondition &cond)
 {
-    if(!_controller->isConnected()) {
-        Serial.println("Controller not connected");
+    if (!_controller->isConnected())
+    {
         return false;
     }
     int val = _controller->getChannel(cond.channel);
@@ -66,6 +66,46 @@ int RuleEngine::getMotorSpeed(const ControllerRule &rule)
             return map(channelPercent, 0, 100, 0, 100);
 
         if (function == MotorFunction::SPEED_PERCENT)
+            return map(channelPercent, 0, 100, rule.effect->from, rule.effect->to);
+    }
+
+    return -1;
+}
+
+int RuleEngine::getServoAngle(const ControllerRule &rule, Servo *servo)
+{
+    ServoFunction function = ServoFunction::UNSPECIFIED;
+    if (rule.effect->type() == TYPE_SERVOS)
+    {
+        function = static_cast<RuleEffectServo *>(rule.effect.get())->function;
+    }
+    else
+    {
+
+        Serial.println("Wrong effect");
+        return -1;
+    }
+
+    if (function == ServoFunction::ANGLE)
+    {
+        return constrain(rule.effect->value, 0, servo->getMaxAngle());
+    }
+
+    int channelPercent = -1;
+    if (rule.condition.channelFunction == ChannelFunction::FULL)
+    {
+        channelPercent = _controller->getChannelPercent(rule.condition.channel);
+    }
+
+    if (rule.condition.channelFunction == ChannelFunction::RANGE)
+        channelPercent = _controller->getChannelPercent(rule.condition.channel, rule.condition.channelFrom, rule.condition.channelTo);
+
+    if (channelPercent != -1)
+    {
+        if (function == ServoFunction::ANGLE_FULL)
+            return map(channelPercent, 0, 100, 0, servo->getMaxAngle());
+
+        if (function == ServoFunction::ANGLE_RANGE)
             return map(channelPercent, 0, 100, rule.effect->from, rule.effect->to);
     }
 

@@ -12,7 +12,7 @@ struct ServoConfig : Resource
     int channel;
     int pwmFrequency;
     int pwmResolution;
-    int maxAngle; // 0..180 degrees
+    int maxAngle; // 0..180 degrees by default
     int minUs;   // microseconds for min angle
     int maxUs;   // microseconds for max angle
     int angleCenter; // use to shift center
@@ -73,7 +73,7 @@ public:
     // 0..180 degrees
     void setAngle(int degrees);
     void loop();
-
+    int getMaxAngle() { return _config.maxAngle; }
 private:
     ServoConfig _config;
     int _angle;

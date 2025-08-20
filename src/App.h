@@ -10,6 +10,7 @@
 #include <Motor.h>
 #include <Controller.h>
 #include <RuleEngine.h>
+#include <Servo.h>
 
 class App
 {
@@ -30,11 +31,12 @@ private:
 
     std::map<std::string, BrushlessMotor*> _brushlessMotors;
     std::map<std::string, Motor*> _motors;
-
+    std::map<std::string, Servo*> _servos;
     void resetController();
     void resetResources();
 
     void loadMotors();
+    void loadServos();
     void loadControllerRules();
     void loadController();
 };

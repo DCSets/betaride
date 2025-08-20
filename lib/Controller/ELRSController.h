@@ -71,7 +71,8 @@ public:
     void begin() override;
     void loop() override;
     void printAllChannels() override;
-    int getChannelPercent(int channel, int min = MIN_STICK_VALUE, int max = MAX_STICK_VALUE) override;
+    int getChannelPercent(int channel) override { return getChannelPercent(channel, MIN_STICK_VALUE, MAX_STICK_VALUE); }
+    int getChannelPercent(int channel, int min, int max) override;
     bool isConnected() override { return _ready && _crsf.isLinkUp(); }
 };
 
