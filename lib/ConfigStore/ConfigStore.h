@@ -25,16 +25,19 @@ public:
     
     void saveMotorsConfig(MotorConfig *motorsConfig, int count) { this->saveResources(motorsConfig, count, TYPE_MOTORS, MAX_MOTORS); };
     void saveBrushlessMotorsConfig(BrushlessMotorConfig *brushlessMotorsConfig, int count) { this->saveResources(brushlessMotorsConfig, count, TYPE_BRUSHLESS_MOTORS, MAX_BRUSHLESS_MOTORS); };
+    void saveServosConfig(ServoConfig *servosConfig, int count) { this->saveResources(servosConfig, count, TYPE_SERVOS, MAX_SERVOS); };
     void saveControllerConfig(ControllerConfig *controllerConfig);
     void saveControllerRulesConfig(ControllerRule *rules, int count) { this->saveResources(rules, count, TYPE_CONTROLLER_RULES, MAX_RULES); };
 
     MotorConfig *loadMotorsConfig() { return this->loadConfig(_motorsConfig, TYPE_MOTORS, "motors"); };
     BrushlessMotorConfig *loadBrushlessMotorsConfig() { return this->loadConfig(_brushlessMotorsConfig, TYPE_BRUSHLESS_MOTORS, "brushless motors"); };
+    ServoConfig *loadServosConfig() { return this->loadConfig(_servosConfig, TYPE_SERVOS, "servos"); };
     ControllerRule *loadControllerRulesConfig() { return this->loadConfig(_controllerRules, TYPE_CONTROLLER_RULES, "Controller rules"); };
     ControllerConfig *loadControllerConfig();
 
     MotorConfig *getMotorsConfig() { return _motorsConfig; };
     BrushlessMotorConfig *getBrushlessMotorsConfig() { return _brushlessMotorsConfig; };
+    ServoConfig *getServosConfig() { return _servosConfig; };
     ControllerConfig *getControllerConfig() { return _controllerConfig; };
     ControllerRule *getControllerRulesConfig() { return _controllerRules; };
 
@@ -46,6 +49,7 @@ private:
     void cleanEntity(const char *entity, int maxCount);
     // Array members to store the data
     MotorConfig _motorsConfig[MAX_MOTORS];
+    ServoConfig _servosConfig[MAX_SERVOS];
     BrushlessMotorConfig _brushlessMotorsConfig[MAX_BRUSHLESS_MOTORS];
     ControllerRule _controllerRules[MAX_RULES];
     ControllerConfig* _controllerConfig = nullptr;

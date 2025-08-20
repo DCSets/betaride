@@ -4,18 +4,18 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <structs.h>
-
+#include <ConfiguratorHelpers.h>
 
 struct ServoConfig : Resource
 {
     int pin;
     int channel;
-    int frequency;
-    int resolution;
-    int angleMinUs;   // microseconds for min angle
-    int angleMaxUs;   // microseconds for max angle
-    int angleCenterUs; // center microseconds
-    int angle;        // 0..180 degrees
+    int pwmFrequency;
+    int pwmResolution;
+    int maxAngle; // 0..180 degrees
+    int minUs;   // microseconds for min angle
+    int maxUs;   // microseconds for max angle
+    int angleCenter; // use to shift center
 
     ServoConfig() = default;
     ServoConfig(String json)
@@ -36,12 +36,12 @@ struct ServoConfig : Resource
         this->isNew = false;
         this->pin = doc["pin"] | -1;
         this->channel = doc["channel"] | -1;
-        this->frequency = doc["frequency"] | -1;
-        this->resolution = doc["resolution"] | -1;
-        this->angleMinUs = doc["angleMinUs"] | -1;
-        this->angleMaxUs = doc["angleMaxUs"] | -1;
-        this->angleCenterUs = doc["angleCenterUs"] | -1;
-        this->angle = doc["angle"] | -1;
+        this->pwmFrequency = doc["pwmFrequency"] | -1;
+        this->pwmResolution = doc["pwmResolution"] | -1;
+        this->minUs = doc["minUs"] | -1;
+        this->maxUs = doc["maxUs"] | -1;
+        this->angleCenter = doc["angleCenter"] | -1;
+        this->maxAngle = doc["maxAngle"] | -1;
     }
 
     void toJson(String &outJson) const
@@ -54,30 +54,29 @@ struct ServoConfig : Resource
         doc["type"] = this->type;
         doc["pin"] = this->pin;
         doc["channel"] = this->channel;
-        doc["frequency"] = this->frequency;
-        doc["resolution"] = this->resolution;
-        doc["angleMinUs"] = this->angleMinUs;
-        doc["angleMaxUs"] = this->angleMaxUs;
-        doc["angleCenterUs"] = this->angleCenterUs;
-        doc["angle"] = this->angle;
+        doc["pwmFrequency"] = this->pwmFrequency;
+        doc["pwmResolution"] = this->pwmResolution;
+        doc["minUs"] = this->minUs;
+        doc["maxUs"] = this->maxUs;
+        doc["angleCenter"] = this->angleCenter;
+        doc["maxAngle"] = this->maxAngle;
 
         serializeJson(doc, outJson);
     }
 };
 
-class ServoSimple
+class Servo
 {
 public:
-    explicit ServoSimple(const ServoConfig &config);
+    Servo(const ServoConfig &config);
 
     // 0..180 degrees
     void setAngle(int degrees);
-    const char *getId() const { return _config.id; }
     void loop();
 
 private:
     ServoConfig _config;
-    uint32_t usToDuty(int microseconds);
+    int _angle;
 };
 
 #endif

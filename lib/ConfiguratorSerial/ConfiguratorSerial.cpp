@@ -25,14 +25,17 @@ void ConfiguratorSerial::loop()
         
         static MotorConfig motors[MAX_MOTORS];
         static BrushlessMotorConfig brushlessMotors[MAX_BRUSHLESS_MOTORS];
+        static ServoConfig servos[MAX_SERVOS];
         static ControllerRule controllerRules[MAX_RULES];
 
+        int servosCount = 0;
         int motorsCount = 0;
         int brushlessCount = 0;
         int rulesCount = 0;
 
         memset(motors, 0, sizeof(motors));
         memset(brushlessMotors, 0, sizeof(brushlessMotors));
+        memset(servos, 0, sizeof(servos));
         memset(controllerRules, 0, sizeof(controllerRules));
 
         static ControllerConfig *controllerConfig;
@@ -66,7 +69,10 @@ void ConfiguratorSerial::loop()
             {
                 brushlessMotors[brushlessCount++] = BrushlessMotorConfig(json);
             }
-
+            if (type == TYPE_SERVOS && servosCount < MAX_SERVOS)
+            {
+                servos[servosCount++] = ServoConfig(json);
+            }
             if (type == TYPE_CONTROLLER && !hasControllerConfig)
             {
                 JsonDocument doc;
@@ -93,6 +99,8 @@ void ConfiguratorSerial::loop()
             _store->saveMotorsConfig(motors, motorsCount);
         if (brushlessCount > 0)
             _store->saveBrushlessMotorsConfig(brushlessMotors, brushlessCount);
+        if (servosCount > 0)
+            _store->saveServosConfig(servos, servosCount);
         if (hasControllerConfig) {
             _store->saveControllerConfig(controllerConfig);
         }
