@@ -19,29 +19,47 @@ void ELRSController::begin()
 
 void ELRSController::loop()
 {
-    if (this->_ready)
+    if (!this->_ready)
     {
-        this->_crsf.update();
+        return;
     }
-}
 
-void ELRSController::getAllChannels(int *outChannels)
-{
-    for (int ChannelNum = 1; ChannelNum <= 16; ChannelNum++)
+    this->_crsf.update();
+    if (!this->_crsf.isLinkUp())
     {
-        outChannels[ChannelNum - 1] = this->_crsf.getChannel(ChannelNum);
+        for (int ChannelNum = 0; ChannelNum <= 15; ChannelNum++)
+        {
+            _channels[ChannelNum] = -1;
+        }
+        return;
+    }
+
+    for (int ChannelNum = 0; ChannelNum <= 15; ChannelNum++)
+    {
+        int value = this->_crsf.getChannel(ChannelNum + 1);
+        _channels[ChannelNum] = value;
     }
 }
 
 void ELRSController::printAllChannels()
 {
+    // to print only channels which were changed
     static int channels[16] = {-1};
-    for (int ChannelNum = 1; ChannelNum <= 16; ChannelNum++)
+    for (int ChannelNum = 0; ChannelNum <= 15; ChannelNum++)
     {
-        int value = this->_crsf.getChannel(ChannelNum);
-        if(channels[ChannelNum - 1] != value) {
-            Serial.printf("[rx@%d@%d]\n", ChannelNum - 1, value);
-            channels[ChannelNum - 1] = value;
+        auto it = _channels.find(ChannelNum);
+        if (it != _channels.end() && channels[ChannelNum] != it->second)
+        {
+            Serial.printf("[rx@%d@%d]\n", ChannelNum, it->second);
+            channels[ChannelNum] = it->second;
         }
     }
+}
+
+int ELRSController::getChannelPercent(int channel, int min, int max) {
+    auto it = _channels.find(channel);
+    if(it != _channels.end()) {
+        return map(it->second, min, max, 0, 100);
+    }
+    return -1;
 }

@@ -31,9 +31,9 @@ struct PS5ControllerConfig : public ControllerConfig
         strncpy(this->name, doc["name"], sizeof(this->name));
         strncpy(this->type, doc["type"], sizeof(this->type));
 
-        this->sdaPin = doc["sdaPin"];
-        this->sclPin = doc["sclPin"];
-        this->i2cAddress = doc["i2cAddress"];
+        this->sdaPin = doc["sdaPin"] | -1;
+        this->sclPin = doc["sclPin"] | -1;
+        this->i2cAddress = doc["i2cAddress"] | -1;
     }
 
     void toJson(String &outJson) const
@@ -68,8 +68,8 @@ public:
 
     void begin() override;
     void loop() override;
-    void getAllChannels(int *outChannels) override;
     void printAllChannels() override;
+    int getChannelPercent(int channel, int min = 0, int max = 100) override;
 };
 
 #endif

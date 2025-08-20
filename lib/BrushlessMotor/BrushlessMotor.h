@@ -35,15 +35,15 @@ struct BrushlessMotorConfig : Resource
         strncpy(this->type, doc["type"], sizeof(this->type));
 
         this->isNew = false;
-        this->pin = doc["pin"];
-        this->channel = doc["channel"];
-        this->pwmFrequency = doc["pwmFrequency"];
-        this->pwmResolution = doc["pwmResolution"];
-        this->throttleMin = doc["throttleMin"];
-        this->throttleMax = doc["throttleMax"];
-        this->throttleCenter = doc["throttleCenter"];
-        this->reverseTimeout = doc["reverseTimeout"];
-        this->is3D = doc["is3D"];
+        this->pin = doc["pin"] | -1;
+        this->channel = doc["channel"] | -1;
+        this->pwmFrequency = doc["pwmFrequency"] | -1;
+        this->pwmResolution = doc["pwmResolution"] | -1;
+        this->throttleMin = doc["throttleMin"] | -1;
+        this->throttleMax = doc["throttleMax"] | -1;
+        this->throttleCenter = doc["throttleCenter"] | -1;
+        this->reverseTimeout = doc["reverseTimeout"] | -1;
+        this->is3D = doc["is3D"] | -1;
     }
 
     void toJson(String &outJson) const

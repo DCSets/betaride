@@ -1,7 +1,6 @@
 #include <App.h>
 
-
-App::App(ConfigStore *store) : _store(*store), _brushlessMotorCount(0), _controllerRulesCount(0), _controller(nullptr)
+App::App(ConfigStore *store) : _store(*store), _controller(nullptr)
 {
     this->resetResources();
     this->loadResources();
@@ -12,7 +11,57 @@ App::~App()
     this->resetResources();
 }
 
-void App::resetController() {
+void App::testController()
+{
+    if (_controller == nullptr)
+        return;
+
+    _controller->loop();
+    _controller->printAllChannels();
+}
+void App::loop()
+{
+    if(_ruleEngine == nullptr || !_ruleEngine->hasRules() || _controller == nullptr) {
+        return;
+    }
+
+    _controller->loop();
+    for(auto &rule : _ruleEngine->rules) {
+        if(!_ruleEngine->checkCondition(rule.condition)) {
+            Serial.println("Rule condition not met");
+            delay(1000);
+            continue;
+        }
+        if(rule.hasSubCondition && !_ruleEngine->checkCondition(rule.subCondition)) {
+            Serial.println("Rule subcondition not met");
+            delay(1000);
+            continue;
+        }
+
+        Serial.println("All good!");
+        String resourceId = rule.effect->resourceId;
+    }
+
+    
+    // // Tick motors after applying effects
+    // for (int i = 0; i < MAX_MOTORS; i++)
+    // {
+    //     if (_brushlessMotors[i] != nullptr)
+    //     {
+    //         _brushlessMotors[i]->loop();
+    //     }
+    // }
+}
+
+/* RESOURCES MANAGEMENT SECTION */
+void App::loadResources()
+{
+    this->loadController();
+    this->loadControllerRules();
+}
+
+void App::resetController()
+{
     if (_controller != nullptr)
     {
         delete _controller;
@@ -20,93 +69,24 @@ void App::resetController() {
     }
 }
 
-void App::resetResources() {
-    for (int i = 0; i < MAX_MOTORS; i++)
-    {
-        if (_motors[i] != nullptr)
-        {
-            delete _motors[i];
-            _motors[i] = nullptr;
-        }
+void App::resetResources()
+{
+    for (auto& pair : _brushlessMotors) {
+        delete pair.second;
     }
-    for (int i = 0; i < MAX_BRUSHLESS_MOTORS; i++)
-    {
-        if (_brushlessMotors[i] != nullptr)
-        {
-            delete _brushlessMotors[i];
-            _brushlessMotors[i] = nullptr;
-        }
+    for (auto& pair : _motors) {
+        delete pair.second;
     }
+    if (_ruleEngine != nullptr)
+    {
+        delete _ruleEngine;
+        _ruleEngine = nullptr;
+    }
+
+    _brushlessMotors.clear();
+    _motors.clear();
+
     this->resetController();
-}
-
-void App::loadResources()
-{
-    this->loadController();
-    // this->loadMotors();
-    // this->loadElrsRules();
-
-    // // Log how many resources were loaded
-    // Serial.print("Loaded resources -> motors: ");
-    // Serial.print(_brushlessMotorCount);
-    // Serial.print(", rules: ");
-    // Serial.print(_elrsRulesCount);
-    // Serial.print(", controller: ");
-    // Serial.println((_elrsRx != nullptr) ? 1 : 0);
-}
-
-void App::loadMotors()
-{
-    Serial.println("Cleaning motors (APP)");
-    // Clean up any existing motors first
-    for (int i = 0; i < MAX_MOTORS; i++)
-    {
-        if (_brushlessMotors[i] != nullptr)
-        {
-            delete _brushlessMotors[i];
-            _brushlessMotors[i] = nullptr;
-        }
-    }
-    Serial.println("Loading motors (APP)");
-    // Get the loaded brushless motor configs
-    BrushlessMotorConfig *configs = _store.getBrushlessMotorsConfig();
-    _brushlessMotorCount = 0;
-
-    // Initialize BrushlessMotor instances for each valid config
-    for (int i = 0; i < MAX_MOTORS; i++)
-    {
-        // Check if this config slot has a valid ID (not empty)
-        if (strlen(configs[i].id) > 0)
-        {
-            Serial.println("Loading motor (APP): " + String(configs[i].id));
-            _brushlessMotors[i] = new BrushlessMotor(configs[i]);
-            _brushlessMotorCount++;
-        }
-    }
-}
-
-void App::loadControllerRules()
-{
-    // Refresh from NVS to reflect any recent saves
-    _store.loadControllerRulesConfig();
-
-    // Clear local rules storage
-    for (int i = 0; i < MAX_RULES; i++)
-    {
-        memset(&_controllerRules[i], 0, sizeof(ControllerRule));
-    }
-
-    ControllerRule *rules = _store.getControllerRulesConfig();
-    _controllerRulesCount = 0;
-
-    for (int i = 0; i < MAX_RULES; i++)
-    {
-        if (strlen(rules[i].id) > 0)
-        {
-            _controllerRules[i] = rules[i];
-            _controllerRulesCount++;
-        }
-    }
 }
 
 void App::loadController()
@@ -118,165 +98,48 @@ void App::loadController()
     ControllerConfig *controllerConfig = _store.getControllerConfig();
     if (controllerConfig == nullptr)
         return;
-    
+
     _controller = ControllerFactory::createControllerFromConfig(*controllerConfig);
     _controller->begin();
 }
 
-BrushlessMotor *App::findBrushlessById(const char *id)
+void App::loadControllerRules()
 {
-    if (id == nullptr || strlen(id) == 0)
-        return nullptr;
-    for (int i = 0; i < MAX_MOTORS; i++)
+    if (_controller == nullptr)
     {
-        if (_brushlessMotors[i] == nullptr)
-            continue;
-        if (strcmp(_brushlessMotors[i]->getId(), id) == 0)
+        return;
+    }
+
+    _ruleEngine = new RuleEngine(_controller);
+
+    // Refresh from NVS to reflect any recent saves
+    _store.loadControllerRulesConfig();
+    ControllerRule *rules = _store.getControllerRulesConfig();
+    for (int i = 0; i < MAX_RULES; i++)
+    {
+        if (strlen(rules[i].id) > 0)
         {
-            return _brushlessMotors[i];
+            _ruleEngine->addRule(rules[i]);
         }
     }
-    return nullptr;
 }
 
-void App::testController() {
-    if (_controller == nullptr)
-        return;
-
-    _controller->loop();
-    _controller->printAllChannels();
-
-}
-void App::loop()
+void App::loadMotors()
 {
-    // Quick checks
-    // if (_controller == nullptr)
-    //     return;
-    // if (_controllerRulesCount == 0)
-    //     return;
+    // Get the loaded brushless motor configs
+    BrushlessMotorConfig *configs = _store.getBrushlessMotorsConfig();
+    for (auto& pair : _motors) {
+        delete pair.second;
+    }
+    _motors.clear();
 
-    // // Update controller state
-    // _controller->loop();
-
-    // int channels[16] = {0};
-    // _controller->getAllChannels(channels);
-
-    // // Evaluate rules
-    // for (int i = 0; i < _controllerRulesCount && i < MAX_RULES; i++)
-    // {
-    //     ControllerRule &rule = _controllerRules[i];
-    //     if (strlen(rule.id) == 0)
-    //         continue;
-
-    //         auto evalCond = [&](const RuleCondition &c)
-    //     {
-    //         // channel expected as string number like "1".."16"
-    //         int chIndex = c.channel;
-    //         if (chIndex < 1 || chIndex > 16)
-    //             return false;
-    //         int value = channels[chIndex - 1];
-    //         switch (c.channelFunction)
-    //         {
-    //         case ChannelFunction::FULL:
-    //             return true;
-    //         case ChannelFunction::RANGE:
-    //             return value >= c.channelFrom && value <= c.channelTo;
-    //         case ChannelFunction::EXACT:
-    //             return value == c.channelValue;
-    //         case ChannelFunction::ABOVE:
-    //             return value > c.channelValue;
-    //         case ChannelFunction::BELOW:
-    //             return value < c.channelValue;
-    //         case ChannelFunction::ABOVE_OR_EQUAL:
-    //             return value >= c.channelValue;
-    //         case ChannelFunction::BELOW_OR_EQUAL:
-    //             return value <= c.channelValue;
-    //         default:
-    //             return false;
-    //         }
-    //     };
-
-    //     if (!evalCond(rule.condition))
-    //         continue;
-    //     if (rule.hasSubCondition && !evalCond(rule.subCondition))
-    //         continue;
-
-        // Apply effect
-        // switch (rule.effect->type())
-        // {
-        // case RuleEffectType::Motor:
-        // case RuleEffectType::BrushlessMotor:
-        // {
-        //     const char *targetId = (rule.effect.type == RuleEffectType::Motor)
-        //                                ? rule.effect.motor.resourceId
-        //                                : rule.effect.brushless.resourceId;
-        //     BrushlessMotor *motor = findBrushlessById(targetId);
-        //     if (motor != nullptr)
-        //     {
-        //         const MotorDirection dir = (rule.effect.type == RuleEffectType::Motor)
-        //                                        ? rule.effect.motor.direction
-        //                                        : rule.effect.brushless.direction;
-        //         const MotorFunction func = (rule.effect.type == RuleEffectType::Motor)
-        //                                        ? rule.effect.motor.function
-        //                                        : rule.effect.brushless.function;
-        //         int value = (rule.effect.type == RuleEffectType::Motor)
-        //                         ? rule.effect.motor.value
-        //                         : rule.effect.brushless.value;
-        //         int from = (rule.effect.type == RuleEffectType::Motor)
-        //                        ? rule.effect.motor.from
-        //                        : rule.effect.brushless.from;
-        //         int to = (rule.effect.type == RuleEffectType::Motor)
-        //                      ? rule.effect.motor.to
-        //                      : rule.effect.brushless.to;
-
-        //         motor->setDirection(dir);
-
-        //         int throttlePercent = 0;
-        //         switch (func)
-        //         {
-        //         case MotorFunction::SPEED_PERCENT:
-        //             throttlePercent = constrain(value, 0, 100);
-        //             break;
-        //         case MotorFunction::SPEED_RANGE:
-        //         {
-        //             // Map current channel value to range [from..to] into 0..100
-        //             int chIndex = atoi(rule.condition.channel);
-        //             int chVal = (chIndex >= 1 && chIndex <= 16) ? channels[chIndex - 1] : 0;
-        //             throttlePercent = map(constrain(chVal, from, to), from, to, 0, 100);
-        //             break;
-        //         }
-        //         case MotorFunction::SPEED_FULL:
-        //         {
-        //             // Map full stick range to 0..100
-        //             int chIndex = atoi(rule.condition.channel);
-        //             int chVal = (chIndex >= 1 && chIndex <= 16) ? channels[chIndex - 1] : 0;
-        //             throttlePercent = map(chVal, ElrsRx::MIN_STICK_VALUE, ElrsRx::MAX_STICK_VALUE, 0, 100);
-        //             throttlePercent = constrain(throttlePercent, 0, 100);
-        //             break;
-        //         }
-        //         default:
-        //             break;
-        //         }
-        //         motor->setThrottle(throttlePercent);
-        //     }
-        //     break;
-        // }
-        // case RuleEffectType::Servo:
-        // {
-        //     // TODO: implement servo handling once Servo resources exist
-        //     break;
-        // }
-        // default:
-        //     break;
-        // }
-    // }
-
-    // // Tick motors after applying effects
-    // for (int i = 0; i < MAX_MOTORS; i++)
-    // {
-    //     if (_brushlessMotors[i] != nullptr)
-    //     {
-    //         _brushlessMotors[i]->loop();
-    //     }
-    // }
+    // Initialize BrushlessMotor instances for each valid config
+    for (int i = 0; i < MAX_MOTORS; i++)
+    {
+        // Check if this config slot has a valid ID (not empty)
+        if (strlen(configs[i].id) > 0)
+        {
+            _brushlessMotors[configs[i].id] = new BrushlessMotor(configs[i]);
+        }
+    }
 }

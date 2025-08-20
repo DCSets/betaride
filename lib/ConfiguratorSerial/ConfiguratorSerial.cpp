@@ -71,7 +71,7 @@ void ConfiguratorSerial::loop()
             {
                 JsonDocument doc;
                 validateJsonHelper(json.c_str(), doc, "Controller config");
-                int controllerTypeValue = doc["controllerType"];
+                int controllerTypeValue = doc["controllerType"] | -1;
                 if (controllerTypeValue == ControllerType::ELRS)
                 {
                     controllerConfig = new ELRSConfig(json);

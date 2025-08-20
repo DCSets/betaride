@@ -12,13 +12,15 @@ enum ControllerType
 
 enum class MotorDirection
 {
+    UNSPECIFIED = -1,
     Forward = 1,
     Backward = 2
 };
 
-// ===== ELRS Rules Types =====
+// ===== Rules Types =====
 enum class ChannelFunction
 {
+    UNSPECIFIED = -1,
     FULL = 1,
     RANGE = 2,
     EXACT = 3,
@@ -30,6 +32,7 @@ enum class ChannelFunction
 
 enum class MotorFunction
 {
+    UNSPECIFIED = -1,
     SPEED_PERCENT = 1,
     SPEED_RANGE = 2,
     SPEED_FULL = 3,

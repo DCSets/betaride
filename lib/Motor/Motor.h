@@ -30,13 +30,13 @@ struct MotorConfig : Resource
         strncpy(this->type, doc["type"], sizeof(this->type));
 
         this->isNew = false;
-        this->pin1 = doc["pin1"];
-        this->pin2 = doc["pin2"];
-        this->channel1 = doc["channel1"];
-        this->channel2 = doc["channel2"];
-        this->pwmFrequency = doc["pwmFrequency"];
-        this->pwmResolution = doc["pwmResolution"];
-        this->reverseTimeout = doc["reverseTimeout"];
+        this->pin1 = doc["pin1"] | -1;
+        this->pin2 = doc["pin2"] | -1;
+        this->channel1 = doc["channel1"] | -1;
+        this->channel2 = doc["channel2"] | -1;
+        this->pwmFrequency = doc["pwmFrequency"] | -1;
+        this->pwmResolution = doc["pwmResolution"] | -1;
+        this->reverseTimeout = doc["reverseTimeout"] | -1;
     }
 
     void toJson(String &outJson) const

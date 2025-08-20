@@ -34,14 +34,14 @@ struct ServoConfig : Resource
         strncpy(this->type, doc["type"], sizeof(this->type));
 
         this->isNew = false;
-        this->pin = doc["pin"];
-        this->channel = doc["channel"];
-        this->frequency = doc["frequency"];
-        this->resolution = doc["resolution"];
-        this->angleMinUs = doc["angleMinUs"];
-        this->angleMaxUs = doc["angleMaxUs"];
-        this->angleCenterUs = doc["angleCenterUs"];
-        this->angle = doc["angle"];
+        this->pin = doc["pin"] | -1;
+        this->channel = doc["channel"] | -1;
+        this->frequency = doc["frequency"] | -1;
+        this->resolution = doc["resolution"] | -1;
+        this->angleMinUs = doc["angleMinUs"] | -1;
+        this->angleMaxUs = doc["angleMaxUs"] | -1;
+        this->angleCenterUs = doc["angleCenterUs"] | -1;
+        this->angle = doc["angle"] | -1;
     }
 
     void toJson(String &outJson) const

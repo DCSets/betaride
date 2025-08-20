@@ -6,6 +6,8 @@
 #include <memory> // for std::unique_ptr
 #include <ConfiguratorHelpers.h>
 #include <constants.h>
+#include <enums.h>
+#include <structs.h>
 
 struct RuleCondition
 {
@@ -20,11 +22,11 @@ struct RuleCondition
         JsonDocument doc;
         if (validateJsonHelper(json.c_str(), doc, "ELRS rule condition"))
         {
-            this->channel = doc["channel"];
-            this->channelFunction = static_cast<ChannelFunction>(doc["channelFunction"].as<int>());
-            this->channelValue = doc["channelValue"];
-            this->channelFrom = doc["channelFrom"];
-            this->channelTo = doc["channelTo"];
+            this->channel = doc["channel"] | -1;
+            this->channelFunction = static_cast<ChannelFunction>(doc["channelFunction"] | -1);
+            this->channelValue = doc["channelValue"] | -1;
+            this->channelFrom = doc["channelFrom"] | -1;
+            this->channelTo = doc["channelTo"] | -1;
         }
     }
 
@@ -43,7 +45,7 @@ struct RuleCondition
 struct RuleEffect
 {
     char resourceId[32];
-    int value; // for SPEED_PERCENT/SPEED_FULL single-value usage
+    int value; // for SPEED_PERCENT single-value usage
     int from;  // for SPEED_RANGE
     int to;    // for SPEED_RANGE
 
@@ -68,11 +70,11 @@ struct RuleEffectMotor : public RuleEffect
         if (validateJsonHelper(json.c_str(), doc, "RuleEffect"))
         {
             strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
-            this->value = doc["value"];
-            this->from = doc["from"];
-            this->to = doc["to"];
-            this->direction = static_cast<MotorDirection>(doc["direction"].as<int>());
-            this->function = static_cast<MotorFunction>(doc["function"].as<int>());
+            this->value = doc["value"] | -1;
+            this->from = doc["from"] | -1;
+            this->to = doc["to"] | -1;
+            this->direction = static_cast<MotorDirection>(doc["direction"] | -1);
+            this->function = static_cast<MotorFunction>(doc["function"] | -1);
         }
     }
     void toJson(String &outJson) const override
@@ -107,11 +109,11 @@ struct RuleEffectBrushlessMotor : public RuleEffect
         if (validateJsonHelper(json.c_str(), doc, "RuleEffectBrushlessMotor"))
         {
             strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
-            this->value = doc["value"];
-            this->from = doc["from"];
-            this->to = doc["to"];
-            this->direction = static_cast<MotorDirection>(doc["direction"].as<int>());
-            this->function = static_cast<MotorFunction>(doc["function"].as<int>());
+            this->value = doc["value"] | -1;
+            this->from = doc["from"] | -1;
+            this->to = doc["to"] | -1;
+            this->direction = static_cast<MotorDirection>(doc["direction"] | -1);
+            this->function = static_cast<MotorFunction>(doc["function"] | -1);
         }
     }
     void toJson(String &outJson) const override
@@ -147,11 +149,11 @@ struct RuleEffectServo : public RuleEffect
         if (validateJsonHelper(json.c_str(), doc, "RuleEffectServo"))
         {
             strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
-            this->value = doc["value"];
-            this->from = doc["from"];
-            this->to = doc["to"];
-            this->direction = static_cast<MotorDirection>(doc["direction"].as<int>());
-            this->function = static_cast<MotorFunction>(doc["function"].as<int>());
+            this->value = doc["value"] | -1;
+            this->from = doc["from"] | -1;
+            this->to = doc["to"] | -1;
+            this->direction = static_cast<MotorDirection>(doc["direction"] | -1);
+            this->function = static_cast<MotorFunction>(doc["function"] | -1);
         }
     }
     void toJson(String &outJson) const override
@@ -198,8 +200,8 @@ struct ControllerRule : public Resource
         strncpy(this->id, doc["id"], sizeof(this->id));
         strncpy(this->name, doc["name"], sizeof(this->name));
         strncpy(this->type, doc["type"], sizeof(this->type));
-        this->isNew = doc["isNew"];
-        this->hasSubCondition = doc["hasSubCondition"];
+        this->isNew = doc["isNew"] | false;
+        this->hasSubCondition = doc["hasSubCondition"] | false;
 
         // Parse condition as JSON object
         if ( doc["condition"].is<JsonObject>())
@@ -225,30 +227,17 @@ struct ControllerRule : public Resource
             
             // Try to determine effect type from the effect object
             String effectType = doc["effect"]["type"] | "";
-            
-            Serial.print("Effect type: ");
-            Serial.println(effectType);
-            
             // If no type in effect, try to infer from the rule type or create a default
-            if (effectType.isEmpty())
+            if (effectType == TYPE_MOTORS)
             {
-                Serial.println("No effect type found, defaulting to brushless motor");
-                // For now, default to brushless motor effect
-                effect.reset(new RuleEffectBrushlessMotor());
-            }
-            else if (effectType == TYPE_MOTORS)
-            {
-                Serial.println("Creating RuleEffectMotor");
                 effect.reset(new RuleEffectMotor());
             }
             else if (effectType == TYPE_BRUSHLESS_MOTORS)
             {
-                Serial.println("Creating RuleEffectBrushlessMotor");
                 effect.reset(new RuleEffectBrushlessMotor());
             }
             else if (effectType == TYPE_SERVOS)
             {
-                Serial.println("Creating RuleEffectServo");
                 effect.reset(new RuleEffectServo());
             }
             else
@@ -260,8 +249,6 @@ struct ControllerRule : public Resource
 
             if (effect)
             {
-                Serial.print("Parsing effect JSON: ");
-                Serial.println(effectJson);
                 effect->fromJson(effectJson);
             }
             else

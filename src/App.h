@@ -2,11 +2,14 @@
 #define APP_H
 
 #include <Arduino.h>
+#include <map>
+#include <string>
 #include <ConfigStore.h>
 #include <ControllerRules.h>
 #include <BrushlessMotor.h>
 #include <Motor.h>
 #include <Controller.h>
+#include <RuleEngine.h>
 
 class App
 {
@@ -22,16 +25,11 @@ public:
     
 private:
     ConfigStore _store;
-
-    BrushlessMotor* _brushlessMotors[MAX_BRUSHLESS_MOTORS] = {nullptr};
-    Motor* _motors[MAX_MOTORS] = {nullptr};
-    ControllerRule _controllerRules[MAX_RULES] = {};
-    
-    int _brushlessMotorCount;
-    int _controllerRulesCount;
+    RuleEngine* _ruleEngine = nullptr;
     Controller* _controller = nullptr;
 
-
+    std::map<std::string, BrushlessMotor*> _brushlessMotors;
+    std::map<std::string, Motor*> _motors;
 
     void resetController();
     void resetResources();
@@ -39,8 +37,6 @@ private:
     void loadMotors();
     void loadControllerRules();
     void loadController();
-
-    BrushlessMotor* findBrushlessById(const char* id);
 };
 
 #endif

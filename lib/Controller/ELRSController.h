@@ -32,9 +32,9 @@ struct ELRSConfig : public ControllerConfig
         strncpy(this->id, doc["id"], sizeof(this->id));
         strncpy(this->name, doc["name"], sizeof(this->name));
         strncpy(this->type, doc["type"], sizeof(this->type));
-        this->rxPin = doc["rxPin"];
-        this->txPin = doc["txPin"];
-        this->uart = doc["uart"];
+        this->rxPin = doc["rxPin"] | -1;
+        this->txPin = doc["txPin"] | -1;
+        this->uart = doc["uart"] | -1;
     }
 
     void toJson(String &outJson) const override
@@ -70,8 +70,9 @@ public:
 
     void begin() override;
     void loop() override;
-    void getAllChannels(int *outChannels) override;
     void printAllChannels() override;
+    int getChannelPercent(int channel, int min = MIN_STICK_VALUE, int max = MAX_STICK_VALUE) override;
+    bool isConnected() override { return _ready && _crsf.isLinkUp(); }
 };
 
 #endif

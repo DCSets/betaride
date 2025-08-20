@@ -36,29 +36,6 @@ void PS5Controller::loop()
     }
 }
 
-void PS5Controller::getAllChannels(int* outChannels)
-{
-    // Mock implementation - returns static channel values
-    if (DEBUG)
-    {
-        Serial.println("PS5 Controller: Mock channel data");
-    }
-    
-    for (int channelNum = 0; channelNum < 16; channelNum++)
-    {
-        outChannels[channelNum] = this->_mockChannels[channelNum];
-    }
-    
-    // In real implementation, you would:
-    // outChannels[0] = ps5.getLeftStickX();    // Left stick X
-    // outChannels[1] = ps5.getLeftStickY();    // Left stick Y
-    // outChannels[2] = ps5.getRightStickX();   // Right stick X
-    // outChannels[3] = ps5.getRightStickY();   // Right stick Y
-    // outChannels[4] = ps5.getLeftTrigger();   // Left trigger
-    // outChannels[5] = ps5.getRightTrigger();  // Right trigger
-    // etc...
-}
-
 void PS5Controller::printAllChannels()
 {
     Serial.println("PS5 Controller: Mock channel data");

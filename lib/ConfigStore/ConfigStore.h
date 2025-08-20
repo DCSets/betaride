@@ -79,14 +79,14 @@ inline void ConfigStore::saveResources(T *resources, int count, const char *enti
         String jsonString;
         cfg->toJson(jsonString);
         if(DEBUG) {
-            Serial.println("Saving config: " + String(cfg->id) + " " + jsonString);
+            Serial.println("DEBUG:Saving config: " + String(cfg->id) + " " + jsonString);
         }
         _prefs.putString(cfg->id, jsonString);
     }
 
     _prefs.putString(entity, idsJoined);
     if (DEBUG)
-        Serial.print(String(entity) + ". IDs: " + idsJoined);
+        Serial.print("DEBUG: " + String(entity) + ". IDs: " + idsJoined);
 }
 
 template <typename T, size_t N>
@@ -113,7 +113,7 @@ inline T *ConfigStore::loadConfig(T (&configArray)[N], const char *entityKey, co
         if (jsonString.isEmpty())
         {
             if (DEBUG)
-                Serial.printf("No JSON data found for %s %s\n", debugName, ids[i].c_str());
+                Serial.printf("DEBUG:No JSON data found for %s %s\n", debugName, ids[i].c_str());
 
             continue;
         }
@@ -123,11 +123,6 @@ inline T *ConfigStore::loadConfig(T (&configArray)[N], const char *entityKey, co
 
         // Copy the parsed config to the array
         configArray[i] = config;
-    }
-
-    if (DEBUG)
-    {
-        Serial.println("Config loaded: " + String(debugName) + " ids: " + this->joinIds(ids, N));
     }
 
     return configArray;

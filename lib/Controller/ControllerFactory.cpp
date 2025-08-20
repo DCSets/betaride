@@ -10,7 +10,7 @@ Controller* ControllerFactory::createControllerFromJson(const String& json) {
         return nullptr;
     }
     
-    ControllerType controllerType = static_cast<ControllerType>(doc["controllerType"].as<int>());
+    ControllerType controllerType = static_cast<ControllerType>(doc["controllerType"] | -1);
     
     switch (controllerType) {
         case ControllerType::ELRS: {

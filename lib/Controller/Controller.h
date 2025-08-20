@@ -7,6 +7,7 @@
 #include <constants.h>
 #include <ConfiguratorHelpers.h>
 #include <structs.h>
+#include <map>
 
 // Forward declarations
 struct ELRSConfig;
@@ -27,11 +28,21 @@ class Controller
 {
 public:
     virtual ~Controller() {}
-    virtual void getAllChannels(int *outChannels) = 0;
     virtual void printAllChannels() = 0;
     virtual void begin() = 0;
     virtual void loop() = 0;
-
+    virtual int getChannelPercent(int channel, int min = 0, int max = 100) = 0;
+    virtual bool isConnected() { return false; }
+    int getChannel(int channel) { 
+        auto it = _channels.find(channel);
+        if(it != _channels.end()) {
+            return it->second;
+        }
+        return -1;
+    }
+    std::map<int, int> getChannels() { return _channels; }
+protected:
+    std::map<int, int> _channels;
 private:
     boolean _ready = false;
 };

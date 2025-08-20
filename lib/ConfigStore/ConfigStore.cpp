@@ -178,7 +178,7 @@ ControllerConfig* ConfigStore::loadControllerConfig()
     deserializeJson(doc, jsonString);
 
     // Check controller type and load appropriate config
-    int controllerType = doc["controllerType"];
+    int controllerType = doc["controllerType"] | -1;
     
     if (controllerType == ControllerType::ELRS)
     {
