@@ -18,6 +18,6 @@ void Servo::loop()
 {
     int pulseUs = map(_angle, 0, _config.maxAngle, _config.minUs, _config.maxUs);
 
-    ledcWrite(this->_config.channel, usToDuty(pulseUs, this->_config.pwmResolution));
+    ledcWrite(this->_config.channel, usToDuty(pulseUs, this->_config.pwmResolution, this->_config.pwmFrequency));
 }
 
