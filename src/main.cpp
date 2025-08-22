@@ -18,6 +18,9 @@ void setup()
   serial = new ConfiguratorSerial(store);
   app = new App(store);
 
+  
+ 
+
   // config = new CarConfig();
   // app = new App(config);
   // // Mock controller (ELRS)

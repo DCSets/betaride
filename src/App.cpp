@@ -44,10 +44,28 @@ void App::loop()
                 }
             } 
         }
+
+        if(rule.effect->type() == TYPE_MOTORS) {
+            auto it = _motors.find(rule.effect->resourceId);
+            if(it != _motors.end()) {
+                int speed = _ruleEngine->getMotorSpeed(rule);
+                MotorDirection direction = _ruleEngine->getMotorDirection(rule);
+                if(speed != -1) {
+                    it->second->setThrottle(speed);
+                }
+                if(direction != MotorDirection::UNSPECIFIED) {
+                    it->second->setDirection(direction);
+                }
+            } 
+        }
+
     }
 
     for(auto &servo : _servos) {
         servo.second->loop();
+    }
+    for(auto &motor : _motors) {
+        motor.second->loop();
     }
     // // Tick motors after applying effects
     // for (int i = 0; i < MAX_MOTORS; i++)
@@ -64,7 +82,7 @@ void App::loadResources()
 {
     this->loadController();
     this->loadControllerRules();
-    // this->loadMotors();
+    this->loadMotors();
     this->loadServos();
 }
 
@@ -138,19 +156,19 @@ void App::loadControllerRules()
 void App::loadMotors()
 {
     // Get the loaded brushless motor configs
-    BrushlessMotorConfig *configs = _store.getBrushlessMotorsConfig();
+    MotorConfig *configs = _store.getMotorsConfig();
     for (auto& pair : _motors) {
         delete pair.second;
     }
     _motors.clear();
 
-    // Initialize BrushlessMotor instances for each valid config
+    // Initialize Motor instances for each valid config
     for (int i = 0; i < MAX_MOTORS; i++)
     {
         // Check if this config slot has a valid ID (not empty)
         if (strlen(configs[i].id) > 0)
         {
-            _brushlessMotors[configs[i].id] = new BrushlessMotor(configs[i]);
+            _motors[configs[i].id] = new Motor(configs[i]);
         }
     }
 }

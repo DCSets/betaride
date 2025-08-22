@@ -45,6 +45,7 @@ int RuleEngine::getMotorSpeed(const ControllerRule &rule)
     }
     else
     {
+        Serial.println("Wrong effect");
         return -1;
     }
 
@@ -55,10 +56,10 @@ int RuleEngine::getMotorSpeed(const ControllerRule &rule)
 
     int channelPercent = -1;
     if (rule.condition.channelFunction == ChannelFunction::FULL)
-        int channelPercent = _controller->getChannelPercent(rule.condition.channel);
+         channelPercent = _controller->getChannelPercent(rule.condition.channel);
 
     if (rule.condition.channelFunction == ChannelFunction::RANGE)
-        int channelPercent = _controller->getChannelPercent(rule.condition.channel, rule.condition.channelFrom, rule.condition.channelTo);
+         channelPercent = _controller->getChannelPercent(rule.condition.channel, rule.condition.channelFrom, rule.condition.channelTo);
 
     if (channelPercent != -1)
     {

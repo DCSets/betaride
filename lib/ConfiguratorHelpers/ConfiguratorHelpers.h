@@ -27,4 +27,9 @@ inline uint32_t usToDuty(int microseconds, int resolution, int frequency)
     return (microseconds * maxDuty) / (1000000L / frequency);
 }
 
+inline uint32_t speedToPWM(int speed, int frequency, int resolution) {
+    uint32_t maxDuty = (1UL << resolution) - 1;
+    return map(speed, 0, 100, 0, maxDuty);
+}
+
 #endif

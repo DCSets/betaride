@@ -74,7 +74,7 @@ private:
     MotorConfig _config;
     MotorDirection _direction;
 
-    int _throttleLvl;
+    int _throttleLvl = 0;
     int _reverseAt;
 };
 
