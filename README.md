@@ -1,7 +1,7 @@
 # Beta Ride
 
 <div align="center">
-  <img src="beta-ride-sm.png" alt="Beta Ride Logo" width="200"/>
+  <img src="beta-ride-sm.png" alt="Beta Ride Logo" width="220"/>
 </div>
 
 ## Overview
