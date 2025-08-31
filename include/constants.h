@@ -3,7 +3,13 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
+#if DEBUG_MODE == 1
 const bool DEBUG = true;
+#else
+const bool DEBUG = false;
+#endif
+
+constexpr const char *VERSION = "0.0.1";
 
 constexpr const char *NVS_NAMESPACE = "config";
 // Resources types

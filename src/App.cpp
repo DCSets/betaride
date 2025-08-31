@@ -59,6 +59,20 @@ void App::loop()
             } 
         }
 
+        if(rule.effect->type() == TYPE_BRUSHLESS_MOTORS) {
+            auto it = _brushlessMotors.find(rule.effect->resourceId);
+            if(it != _brushlessMotors.end()) {
+                int speed = _ruleEngine->getMotorSpeed(rule);
+                MotorDirection direction = _ruleEngine->getMotorDirection(rule);
+                if(speed != -1) {
+                    it->second->setThrottle(speed);
+                }
+                if(direction != MotorDirection::UNSPECIFIED) {
+                    it->second->setDirection(direction);
+                }
+            } 
+        }
+
     }
 
     for(auto &servo : _servos) {
@@ -67,14 +81,9 @@ void App::loop()
     for(auto &motor : _motors) {
         motor.second->loop();
     }
-    // // Tick motors after applying effects
-    // for (int i = 0; i < MAX_MOTORS; i++)
-    // {
-    //     if (_brushlessMotors[i] != nullptr)
-    //     {
-    //         _brushlessMotors[i]->loop();
-    //     }
-    // }
+    for(auto &motor : _brushlessMotors) {
+        motor.second->loop();
+    }
 }
 
 /* RESOURCES MANAGEMENT SECTION */
@@ -83,6 +92,7 @@ void App::loadResources()
     this->loadController();
     this->loadControllerRules();
     this->loadMotors();
+    this->loadBrushlessMotors();
     this->loadServos();
 }
 
@@ -169,6 +179,26 @@ void App::loadMotors()
         if (strlen(configs[i].id) > 0)
         {
             _motors[configs[i].id] = new Motor(configs[i]);
+        }
+    }
+}
+
+void App::loadBrushlessMotors()
+{
+    // Get the loaded brushless motor configs
+    BrushlessMotorConfig *configs = _store.getBrushlessMotorsConfig();
+    for (auto& pair : _brushlessMotors) {
+        delete pair.second;
+    }
+    _brushlessMotors.clear();
+
+    // Initialize Motor instances for each valid config
+    for (int i = 0; i < MAX_BRUSHLESS_MOTORS; i++)
+    {
+        // Check if this config slot has a valid ID (not empty)
+        if (strlen(configs[i].id) > 0)
+        {
+            _brushlessMotors[configs[i].id] = new BrushlessMotor(configs[i]);
         }
     }
 }

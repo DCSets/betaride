@@ -52,7 +52,6 @@ void BrushlessMotor::loop()
         return ledcWrite(this->_config.channel, usToDuty(throttleUs, this->_config.pwmResolution, this->_config.pwmFrequency));
     }
 
-    Serial.println("Throttle: " + String(this->_throttleLvl));
     int throttleUs = map(this->_throttleLvl, 0, 100, this->_config.throttleMin, this->_config.throttleMax);
     return ledcWrite(this->_config.channel, usToDuty(throttleUs, this->_config.pwmResolution, this->_config.pwmFrequency));
 }

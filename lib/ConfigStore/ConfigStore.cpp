@@ -163,6 +163,7 @@ ControllerConfig* ConfigStore::loadControllerConfig()
     {
         if (DEBUG)
             Serial.println("No controller id found");
+            
         return _controllerConfig;
     }
 

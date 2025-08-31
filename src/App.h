@@ -36,6 +36,7 @@ private:
     void resetResources();
 
     void loadMotors();
+    void loadBrushlessMotors();
     void loadServos();
     void loadControllerRules();
     void loadController();

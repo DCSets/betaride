@@ -71,6 +71,7 @@ private:
 
     static constexpr int MAX_CHUNKS = 5;
     static constexpr const char *_PONG_HASH = "RC_CONFIGURATOR";
+    static constexpr const char *_VERSION = VERSION;
     static constexpr const char *_CMD_SERIAL = "serial";
     static constexpr const char *_CMD_REQUEST_RESOURCES = "rrequest";
     static constexpr const char *_CMD_TRANSFER = "transfer";
