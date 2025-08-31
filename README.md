@@ -51,9 +51,9 @@ Beta Ride is an advanced ESP32-based car control firmware that provides flexible
    pio run --target upload
    ```
 
-### Method 2: Dow
+### Method 2: Download specific release
 
-1. **Download Latest Release**: Visit the [Releases page](https://github.com/DCSets/betaride/releases) and download the latest release files
+1. **Download Release Archive**: Visit the [Releases page](https://github.com/DCSets/betaride/releases) and download the latest release files
 
 2. Unzip archive and flash the same way as in previous method    
 
