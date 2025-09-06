@@ -159,6 +159,7 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
             Serial.println("Requested resources:");
         }
         _store->printResourcesConfgs();
+        delay(500); // Wait for 0.5s to let configurator read all data
         Serial.printf("[%s@1]\n", this->_CMD_REQUEST_RESOURCES);
     }
     else if (baseCommand == _CMD_STORE_RESOURCES)

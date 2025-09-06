@@ -28,7 +28,7 @@ Beta Ride is an advanced ESP32-based car control firmware that provides flexible
 1. **Install PlatformIO**: Download and install [PlatformIO](https://platformio.org/install) or use the PlatformIO extension in VS Code
 2. **ESP32 Board Support**: Ensure ESP32 board support is installed in PlatformIO
 
-### Method 1: Using PlatformIO (Recommended)
+### Method 1: Download latest version (it may contain some bugs)
 
 1. **Clone the Repository**:
    ```bash
@@ -51,7 +51,7 @@ Beta Ride is an advanced ESP32-based car control firmware that provides flexible
    pio run --target upload
    ```
 
-### Method 2: Download specific release
+### Method 2: Download specific release (Recommended)
 
 1. **Download Release Archive**: Visit the [Releases page](https://github.com/DCSets/betaride/releases) and download the latest release files
 

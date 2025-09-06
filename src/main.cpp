@@ -21,6 +21,7 @@ void setup()
 
 void loop()
 {
+
   serial->loop();
   if(!serial->isConnected()) {
     app->loop();

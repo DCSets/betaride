@@ -14,6 +14,9 @@ void ELRSController::begin()
         }
         this->_crsf.begin(this->_crsfSerial);
         this->_ready = true;
+        if(DEBUG) {
+            Serial.println("ELRSController initialized");
+        }
     }
 }
 
@@ -41,17 +44,16 @@ void ELRSController::loop()
     }
 }
 
-void ELRSController::printAllChannels()
-{
-    // to print only channels which were changed
+void ELRSController::printAllChannels() {
+    static uint32_t last = 0;
+    if (millis() - last < 50) return; // 20 Hz
+    last = millis();
     static int channels[16] = {-1};
-    for (int ChannelNum = 0; ChannelNum <= 15; ChannelNum++)
-    {
-        auto it = _channels.find(ChannelNum);
-        if (it != _channels.end() && channels[ChannelNum] != it->second)
-        {
-            Serial.printf("[rx@%d@%d]\n", ChannelNum, it->second);
-            channels[ChannelNum] = it->second;
+    for (int i=0;i<16;i++) {
+        auto it = _channels.find(i);
+        if (it != _channels.end() && channels[i] != it->second) {
+            Serial.printf("[rx@%d@%d]\n", i, it->second);
+            channels[i] = it->second;
         }
     }
 }

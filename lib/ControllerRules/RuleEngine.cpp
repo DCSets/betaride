@@ -58,15 +58,15 @@ int RuleEngine::getMotorSpeed(const ControllerRule &rule)
     if (rule.condition.channelFunction == ChannelFunction::FULL)
          channelPercent = _controller->getChannelPercent(rule.condition.channel);
 
-    if (rule.condition.channelFunction == ChannelFunction::RANGE)
+    if (rule.condition.channelFunction == ChannelFunction::RANGE) {
          channelPercent = _controller->getChannelPercent(rule.condition.channel, rule.condition.channelFrom, rule.condition.channelTo);
-
+    }
     if (channelPercent != -1)
     {
         if (function == MotorFunction::SPEED_FULL)
             return map(channelPercent, 0, 100, 0, 100);
 
-        if (function == MotorFunction::SPEED_PERCENT)
+        if (function == MotorFunction::SPEED_RANGE)
             return map(channelPercent, 0, 100, rule.effect->from, rule.effect->to);
     }
 

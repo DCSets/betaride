@@ -57,6 +57,7 @@ void Motor::loop()
     }
 
     uint32_t pwmValue = speedToPWM(this->_throttleLvl, this->_config.pwmFrequency, this->_config.pwmResolution);
+
     if (this->_config.pin1 != -1 && this->_config.channel1 != -1 && this->_config.pin2 != -1 && this->_config.channel2 != -1) {
         if(this->_direction == MotorDirection::Forward) {
             ledcWrite(this->_config.channel1, pwmValue);
