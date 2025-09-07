@@ -62,6 +62,9 @@ private:
     HardwareSerial _crsfSerial;
     boolean _ready = false;
 
+    unsigned long lastCrsfUpdate = 0;
+    unsigned long crsfUpdateInterval = 7; 
+    unsigned long drift = 20;
 public:
     ELRSController(ELRSConfig config)
         : _config(config),

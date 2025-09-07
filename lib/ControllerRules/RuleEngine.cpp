@@ -14,7 +14,7 @@ bool RuleEngine::checkCondition(const RuleCondition &cond)
     switch (cond.channelFunction)
     {
     case ChannelFunction::EXACT:
-        return val == cond.channelValue;
+        return val >= cond.channelValue - _controller->drift && val <= cond.channelValue + _controller->drift;
     case ChannelFunction::ABOVE:
         return val > cond.channelValue;
     case ChannelFunction::ABOVE_OR_EQUAL:

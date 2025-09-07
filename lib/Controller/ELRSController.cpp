@@ -27,7 +27,13 @@ void ELRSController::loop()
         return;
     }
 
-    this->_crsf.update();
+    // CRSF update with rate limiting
+    unsigned long currentTime = millis();
+    if (currentTime - this->lastCrsfUpdate >= this->crsfUpdateInterval) {
+        this->lastCrsfUpdate = currentTime;
+        this->_crsf.update();
+    }
+
     if (!this->_crsf.isLinkUp())
     {
         for (int ChannelNum = 0; ChannelNum <= 15; ChannelNum++)

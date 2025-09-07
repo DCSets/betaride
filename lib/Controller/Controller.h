@@ -42,6 +42,7 @@ public:
         return -1;
     }
     std::map<int, int> getChannels() { return _channels; }
+    unsigned long drift = 20;
 protected:
     std::map<int, int> _channels;
 private:
