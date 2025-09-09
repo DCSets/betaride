@@ -125,7 +125,6 @@ void ConfigStore::printResourcesConfgs()
     }
     
     // It should be last because effect relay on other resources
-    // TODO: probably the separate command/indicator that resources are printed should be added as well
     Serial.println("=== Controller Rules ===");
     this->printConfigs(_controllerRules, MAX_RULES);
 }

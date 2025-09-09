@@ -23,7 +23,7 @@ constexpr int MAX_MOTORS = 10;
 constexpr int MAX_BRUSHLESS_MOTORS = 10;
 constexpr int MAX_SERVOS = 10;
 constexpr int MAX_CONTROLLERS = 1;
-constexpr int MAX_RULES = 20;
+constexpr int MAX_RULES = 40;
 
 
 constexpr int CHANNELS_PRINT_RATE = 100;
