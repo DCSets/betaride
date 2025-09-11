@@ -177,6 +177,21 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
             Serial.println("Controller testing: " + String(this->_controllerTesting));
         }
     }
+    else if (baseCommand == _CMD_SCAN_BLUETOOTH)
+    {
+        if (this->_bluetoothScanner == nullptr)
+        {
+            this->_bluetoothScanner = new BluetoothScanner([this](std::string name, std::string address) {
+                Serial.printf("[%s@%s@%s]\n", this->_CMD_SCAN_BLUETOOTH, name.c_str(), address.c_str());
+            });
+        }
+        if (chunks[1] == "1" && !this->_bluetoothScanner->isScanning()) {
+            this->_bluetoothScanner->scan();
+        }
+        if (chunks[1] == "0" && this->_bluetoothScanner->isScanning()) {
+            this->_bluetoothScanner->stopScan("Stopping scan");
+        }
+    }
 }
 
 int ConfiguratorSerial::parseCommand(String received, String outputChunks[], int maxChunks)

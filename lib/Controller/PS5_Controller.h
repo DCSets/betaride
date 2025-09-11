@@ -1,5 +1,5 @@
-#ifndef PS5_CONTROLLER_H
-#define PS5_CONTROLLER_H
+#ifndef BR_PS5_CONTROLLER_H
+#define BR_PS5_CONTROLLER_H
 
 #include <Arduino.h>
 #include <ArduinoJson.h>

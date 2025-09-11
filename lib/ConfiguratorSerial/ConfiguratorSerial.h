@@ -6,10 +6,11 @@
 #include <string>
 #include <Arduino.h>
 #include <ConfigStore.h>
+#include <BluetoothScanner.h>
 #include <constants.h>
 #include <enums.h>
 #include <ELRSController.h>
-#include <PS5Controller.h>
+#include <PS5_Controller.h>
 
 class ConfiguratorSerial
 {
@@ -35,6 +36,7 @@ private:
     boolean _configTransfer = false;
     std::vector<std::pair<std::string, std::string>> _resources;
     ConfigStore *_store;
+    BluetoothScanner *_bluetoothScanner = nullptr;
 
     void addResource(const std::string &key, const std::string &value)
     {
@@ -79,6 +81,7 @@ private:
     static constexpr const char *_CMD_CLEAR_RESOURCES = "clear";
     static constexpr const char *_CMD_RESTART = "restart";
     static constexpr const char *_CMD_TEST_CONTROLLER = "tcontroller";
+    static constexpr const char *_CMD_SCAN_BLUETOOTH = "scanbt";
 };
 
 #endif
