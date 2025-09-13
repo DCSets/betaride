@@ -17,21 +17,18 @@ void setup()
 {
   Serial.begin(115200);
 
-
   store = new ConfigStore();
   serial = new ConfiguratorSerial(store);
-  // app = new App(store);
-
-
+  app = new App(store);
 }
 
 void loop()
 {     
   serial->loop();
-  // if(!serial->isConnected()) {
-  //   app->loop();
-  // }
-  // if(serial->isControllerTesting()) {
-  //   app->testController();
-  // }
+  if(!serial->isConnected()) {
+    app->loop();
+  }
+  if(serial->isControllerTesting()) {
+    app->testController();
+  }
 }

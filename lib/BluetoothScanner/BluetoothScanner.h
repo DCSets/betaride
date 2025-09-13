@@ -11,7 +11,13 @@
 class BluetoothScanner
 {
 public:
-    BluetoothScanner(std::function<void(std::string, std::string)> callback) { this->callback = callback; };
+    BluetoothScanner(
+        std::function<void(std::string, std::string)> deviceFoundCallback,
+        std::function<void()> scanStoppedCallback
+    ) { 
+        this->deviceFoundCallback = deviceFoundCallback; 
+        this->scanStoppedCallback = scanStoppedCallback;
+    };
     void scan();
     void stopScan(String reason);
     boolean isScanning() { return this->scanStartTime != 0; };
@@ -19,7 +25,8 @@ public:
 private:
     const int MAX_SCAN_DURATION = 30000;
     uint scanStartTime = 0;
-    std::function<void(std::string, std::string)> callback;
+    std::function<void(std::string, std::string)> deviceFoundCallback;
+    std::function<void()> scanStoppedCallback;
     BluetoothSerial SerialBT;
     void onDeviceFound(BTAdvertisedDevice* pDevice);
     std::vector<std::pair<std::string, std::string>> controllerFound;

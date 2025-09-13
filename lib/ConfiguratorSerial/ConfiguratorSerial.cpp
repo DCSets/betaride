@@ -81,12 +81,14 @@ void ConfiguratorSerial::loop()
                 if (controllerTypeValue == ControllerType::ELRS)
                 {
                     controllerConfig = new ELRSConfig(json);
+                    hasControllerConfig = true;
                 }
                 if (controllerTypeValue == ControllerType::PS5)
                 {
                     controllerConfig = new PS5ControllerConfig(json);
+                    hasControllerConfig = true;
                 }
-                hasControllerConfig = true;
+                
             }
 
             if (type == TYPE_CONTROLLER_RULES && rulesCount < MAX_RULES)
@@ -181,14 +183,21 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
     {
         if (this->_bluetoothScanner == nullptr)
         {
-            this->_bluetoothScanner = new BluetoothScanner([this](std::string name, std::string address) {
-                Serial.printf("[%s@%s@%s]\n", this->_CMD_SCAN_BLUETOOTH, name.c_str(), address.c_str());
-            });
+            this->_bluetoothScanner = new BluetoothScanner(
+                [this](std::string name, std::string address) {
+                    Serial.printf("[%s@%s@%s]\n", this->_CMD_BLUETOOTH_DEVICE_FOUND, name.c_str(), address.c_str());
+                },
+                [this]() {
+                    Serial.printf("[%s@0]\n", this->_CMD_SCAN_BLUETOOTH);
+                }
+            );
         }
         if (chunks[1] == "1" && !this->_bluetoothScanner->isScanning()) {
+            Serial.printf("[%s@1]\n", this->_CMD_SCAN_BLUETOOTH);
             this->_bluetoothScanner->scan();
         }
         if (chunks[1] == "0" && this->_bluetoothScanner->isScanning()) {
+            Serial.printf("[%s@0]\n", this->_CMD_SCAN_BLUETOOTH);
             this->_bluetoothScanner->stopScan("Stopping scan");
         }
     }

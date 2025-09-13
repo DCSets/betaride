@@ -18,6 +18,7 @@ void BluetoothScanner::stopScan(String reason)
     {
         this->scanStartTime = 0;
         SerialBT.discoverAsyncStop();
+        this->scanStoppedCallback();
         if (DEBUG)
         {
             Serial.println("Bluetooth scan stopped: " + reason);
@@ -57,5 +58,5 @@ void BluetoothScanner::addControllerFound(std::string name, uint8_t *address)
 {
     String addressString = String(address[0], HEX) + ":" + String(address[1], HEX) + ":" + String(address[2], HEX) + ":" + String(address[3], HEX) + ":" + String(address[4], HEX) + ":" + String(address[5], HEX);
     this->controllerFound.push_back(std::make_pair(name, addressString.c_str()));
-    this->callback(name, addressString.c_str());
+    this->deviceFoundCallback(name, addressString.c_str());
 }
