@@ -120,6 +120,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ExpressLRS](https://github.com/ExpressLRS/ExpressLRS) for ELRS protocol support
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson) for JSON handling
 - [AlfredoCRSF](https://github.com/alfredosystems/AlfredoCRSF) for CRSF protocol support
+- [PS5-ESP32](https://github.com/rodneybakiskan/ps5-esp32.git) for PS5 dualsense controller support
 
 ---
 

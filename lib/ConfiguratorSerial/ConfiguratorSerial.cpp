@@ -122,7 +122,7 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
         this->_isConnected = (chunks[1] == "1") ? true : false;
         if (this->_isConnected) {
             // Pong to let configurator know that the serial is connected
-            Serial.printf("[%s@%s]\n", _CMD_SERIAL, _PONG_HASH );
+            Serial.printf("[%s@%s@%s]\n", _CMD_SERIAL, _PONG_HASH, _VERSION );
         }
         if (DEBUG)
         {

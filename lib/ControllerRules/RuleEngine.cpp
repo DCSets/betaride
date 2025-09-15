@@ -27,6 +27,8 @@ bool RuleEngine::checkCondition(const RuleCondition &cond)
         return val >= cond.channelFrom && val <= cond.channelTo;
     case ChannelFunction::FULL:
         return true;
+    case ChannelFunction::CLICKED:
+        return _controller->getButtonClicked(cond.channel);
     default:
         return false;
     }

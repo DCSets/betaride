@@ -6,9 +6,6 @@
 #include <ConfiguratorSerial.h>
 #include <App.h>
 
-
-#include <BluetoothScanner.h>
-
 ConfiguratorSerial *serial = nullptr;
 ConfigStore *store = nullptr;
 App *app = nullptr;

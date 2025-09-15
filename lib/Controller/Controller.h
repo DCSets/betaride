@@ -41,10 +41,26 @@ public:
         }
         return -1;
     }
+    boolean getButtonClicked(int channel) {
+        auto it = _buttonClicks.find(channel);
+        if(it != _buttonClicks.end()) {
+            return it->second.clicked;
+        }
+        return false;
+    }
     std::map<int, int> getChannels() { return _channels; }
     unsigned long drift = 20;
 protected:
     std::map<int, int> _channels;
+    int _buttonDebounceDelay = 50; // debounce in ms
+    struct buttonClicks {
+        boolean clicked;
+        boolean lastState;
+        boolean lastStableState;
+        unsigned long debounceTime;
+    };  
+    std::map<int, buttonClicks> _buttonClicks;
+    void handleButton(int channel, boolean state, unsigned long timestamp);
 private:
     boolean _ready = false;
 };

@@ -22,11 +22,14 @@ void PS5_Controller::loop()
     }
 
     // Update all channels with current PS5 controller values
+    unsigned long currentTime = millis(); // It's ok to have small diff in time
     for (int i = 0; i < 28; i++) {
         int value = getChannelValue(i);
         if (value != -300) {
             _channels[i] = value;
         }
+
+        handleButton(i, value, currentTime);
     }
 }
 
