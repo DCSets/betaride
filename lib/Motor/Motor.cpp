@@ -41,7 +41,6 @@ void Motor::loop()
 
     if (this->_reverseAt != 0)
     {
-        Serial.println("Reverse at");
         unsigned long currentTime = millis();
         if (currentTime >= this->_reverseAt)
         {
