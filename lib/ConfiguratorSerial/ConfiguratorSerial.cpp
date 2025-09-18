@@ -88,6 +88,11 @@ void ConfiguratorSerial::loop()
                     controllerConfig = new PS5ControllerConfig(json);
                     hasControllerConfig = true;
                 }
+                if (controllerTypeValue == ControllerType::PS4_DUALSHOCK)
+                {
+                    // controllerConfig = new PS4ControllerConfig(json);
+                    // hasControllerConfig = true;
+                }
                 
             }
 

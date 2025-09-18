@@ -13,7 +13,7 @@ App::~App()
 
 void App::testController()
 {
-    if (_controller == nullptr)
+    if (_controller == nullptr || !_controller->isConnected())
         return;
 
     _controller->loop();
@@ -21,7 +21,7 @@ void App::testController()
 }
 void App::loop()
 {
-    if(_ruleEngine == nullptr || !_ruleEngine->hasRules() || _controller == nullptr) {
+    if(_controller == nullptr || !_controller->isConnected() || _ruleEngine == nullptr || !_ruleEngine->hasRules()) {
         return;
     }
 

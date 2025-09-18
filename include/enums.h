@@ -7,7 +7,8 @@ enum ControllerType
 {
     UNKNOWN = 0,
     ELRS = 1,
-    PS5 = 2
+    PS5 = 2,
+    PS4_DUALSHOCK = 3
 };
 
 enum class MotorDirection

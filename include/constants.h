@@ -9,7 +9,7 @@ const bool DEBUG = true;
 const bool DEBUG = false;
 #endif
 
-constexpr const char *VERSION = "0.0.1";
+constexpr const char *VERSION = "0.1.0";
 
 constexpr const char *NVS_NAMESPACE = "config";
 // Resources types

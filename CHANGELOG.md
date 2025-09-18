@@ -11,7 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - BT Classic scanner (supports onDeviceFound, onStart, onStop events)
 - Support for PS5 Controller with 28 channels mapping
 - Automatic BT device scan in configurator
-- "Click" event in controller rules
 - Multiple resources per effect
 
 ### Technical

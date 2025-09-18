@@ -184,7 +184,12 @@ public:
     void printAllChannels() override;
     int getChannelPercent(int channel) override;
     int getChannelPercent(int channel, int min, int max) override;
-    bool isConnected() override { return _ready && ps5.isConnected(); }
+    bool isConnected() override { 
+        if(!_ready) {
+            return false;
+        }
+        return ps5.isConnected(); 
+    }
 };
 
 #endif
