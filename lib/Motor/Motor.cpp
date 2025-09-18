@@ -38,6 +38,7 @@ void Motor::setDirection(MotorDirection direction)
 
 void Motor::loop()
 {
+
     if (this->_reverseAt != 0)
     {
         unsigned long currentTime = millis();

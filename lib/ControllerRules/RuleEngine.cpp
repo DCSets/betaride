@@ -24,9 +24,15 @@ bool RuleEngine::checkCondition(const RuleCondition &cond)
     case ChannelFunction::BELOW_OR_EQUAL:
         return val <= cond.channelValue;
     case ChannelFunction::RANGE:
-        return val >= cond.channelFrom && val <= cond.channelTo;
+        {
+            int minVal = min(cond.channelFrom, cond.channelTo);
+            int maxVal = max(cond.channelFrom, cond.channelTo);
+            return val >= minVal && val <= maxVal;
+        }
     case ChannelFunction::FULL:
         return true;
+    case ChannelFunction::CLICKED:
+        return _controller->getButtonClicked(cond.channel);
     default:
         return false;
     }

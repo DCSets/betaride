@@ -7,7 +7,7 @@
 #include <BrushlessMotor.h>
 #include <Controller.h>
 #include <ELRSController.h>
-#include <PS5Controller.h>
+#include <PS5_Controller.h>
 #include <Servo.h>
 #include <constants.h>
 #include <ControllerRules.h>

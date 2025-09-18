@@ -5,6 +5,7 @@
 #include <Controller.h>
 #include <ConfiguratorSerial.h>
 #include <App.h>
+#include <ps5Controller.h>
 
 ConfiguratorSerial *serial = nullptr;
 ConfigStore *store = nullptr;

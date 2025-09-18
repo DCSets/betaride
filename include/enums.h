@@ -7,7 +7,8 @@ enum ControllerType
 {
     UNKNOWN = 0,
     ELRS = 1,
-    PS5 = 2
+    PS5 = 2,
+    PS4_DUALSHOCK = 3
 };
 
 enum class MotorDirection
@@ -28,6 +29,7 @@ enum class ChannelFunction
     BELOW = 5,
     ABOVE_OR_EQUAL = 6,
     BELOW_OR_EQUAL = 7,
+    CLICKED = 8,
 };
 
 enum class MotorFunction

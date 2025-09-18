@@ -44,12 +44,16 @@ struct RuleCondition
 
 struct RuleEffect
 {
-    char resourceId[32];
+    char resourceIds[10][13];
+    int count; // actual number of resourceIds in the array
     int value; // for SPEED_PERCENT single-value usage
     int from;  // for SPEED_RANGE
     int to;    // for SPEED_RANGE
 
+    RuleEffect() : count(0) {} // Initialize count to 0
+
     virtual ~RuleEffect() {}
+    
     virtual const char *type() const = 0;
 
     virtual void fromJson(String json) = 0;
@@ -69,7 +73,24 @@ struct RuleEffectMotor : public RuleEffect
         JsonDocument doc;
         if (validateJsonHelper(json.c_str(), doc, "RuleEffect"))
         {
-            strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
+            // Clear the resourceIds array first
+            memset(this->resourceIds, 0, sizeof(this->resourceIds));
+            this->count = 0; // Reset count
+            
+            // Handle resourceIds as JSON array
+            if (doc["resourceIds"].is<JsonArray>()) {
+                JsonArray resourceIdsArray = doc["resourceIds"];
+                int arrayCount = min((int)resourceIdsArray.size(), 10); // Limit to array size
+                for (int i = 0; i < arrayCount; i++) {
+                    const char* resourceId = resourceIdsArray[i];
+                    if (resourceId) {
+                        strncpy(this->resourceIds[i], resourceId, 12); // Leave space for null terminator
+                        this->resourceIds[i][12] = '\0'; // Ensure null termination
+                        this->count++; // Increment count for each valid resourceId
+                    }
+                }
+            }
+            
             this->value = doc["value"] | -1;
             this->from = doc["from"] | -1;
             this->to = doc["to"] | -1;
@@ -83,7 +104,15 @@ struct RuleEffectMotor : public RuleEffect
         
         // Add base class data
         doc["type"] = type();
-        doc["resourceId"] = this->resourceId;
+        
+        // Serialize resourceIds array
+        JsonArray resourceIdsArray = doc["resourceIds"].to<JsonArray>();
+        for (int i = 0; i < 10; i++) {
+            if (strlen(this->resourceIds[i]) > 0) {
+                resourceIdsArray.add(this->resourceIds[i]);
+            }
+        }
+        
         doc["value"] = this->value;
         doc["from"] = this->from;
         doc["to"] = this->to;
@@ -108,7 +137,24 @@ struct RuleEffectBrushlessMotor : public RuleEffect
         JsonDocument doc;
         if (validateJsonHelper(json.c_str(), doc, "RuleEffectBrushlessMotor"))
         {
-            strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
+            // Clear the resourceIds array first
+            memset(this->resourceIds, 0, sizeof(this->resourceIds));
+            this->count = 0; // Reset count
+            
+            // Handle resourceIds as JSON array
+            if (doc["resourceIds"].is<JsonArray>()) {
+                JsonArray resourceIdsArray = doc["resourceIds"];
+                int arrayCount = min((int)resourceIdsArray.size(), 10); // Limit to array size
+                for (int i = 0; i < arrayCount; i++) {
+                    const char* resourceId = resourceIdsArray[i];
+                    if (resourceId) {
+                        strncpy(this->resourceIds[i], resourceId, 12); // Leave space for null terminator
+                        this->resourceIds[i][12] = '\0'; // Ensure null termination
+                        this->count++; // Increment count for each valid resourceId
+                    }
+                }
+            }
+            
             this->value = doc["value"] | -1;
             this->from = doc["from"] | -1;
             this->to = doc["to"] | -1;
@@ -122,7 +168,15 @@ struct RuleEffectBrushlessMotor : public RuleEffect
         
         // Add base class data
         doc["type"] = type();
-        doc["resourceId"] = this->resourceId;
+        
+        // Serialize resourceIds array
+        JsonArray resourceIdsArray = doc["resourceIds"].to<JsonArray>();
+        for (int i = 0; i < 10; i++) {
+            if (strlen(this->resourceIds[i]) > 0) {
+                resourceIdsArray.add(this->resourceIds[i]);
+            }
+        }
+        
         doc["value"] = this->value;
         doc["from"] = this->from;
         doc["to"] = this->to;
@@ -146,7 +200,24 @@ struct RuleEffectServo : public RuleEffect
         JsonDocument doc;
         if (validateJsonHelper(json.c_str(), doc, "RuleEffectServo"))
         {
-            strncpy(this->resourceId, doc["resourceId"], sizeof(this->resourceId));
+            // Clear the resourceIds array first
+            memset(this->resourceIds, 0, sizeof(this->resourceIds));
+            this->count = 0; // Reset count
+            
+            // Handle resourceIds as JSON array
+            if (doc["resourceIds"].is<JsonArray>()) {
+                JsonArray resourceIdsArray = doc["resourceIds"];
+                int arrayCount = min((int)resourceIdsArray.size(), 10); // Limit to array size
+                for (int i = 0; i < arrayCount; i++) {
+                    const char* resourceId = resourceIdsArray[i];
+                    if (resourceId) {
+                        strncpy(this->resourceIds[i], resourceId, 12); // Leave space for null terminator
+                        this->resourceIds[i][12] = '\0'; // Ensure null termination
+                        this->count++; // Increment count for each valid resourceId
+                    }
+                }
+            }
+            
             this->value = doc["value"] | -1;
             this->from = doc["from"] | -1;
             this->to = doc["to"] | -1;
@@ -159,7 +230,15 @@ struct RuleEffectServo : public RuleEffect
         
         // Add base class data
         doc["type"] = type();
-        doc["resourceId"] = this->resourceId;
+        
+        // Serialize resourceIds array
+        JsonArray resourceIdsArray = doc["resourceIds"].to<JsonArray>();
+        for (int i = 0; i < 10; i++) {
+            if (strlen(this->resourceIds[i]) > 0) {
+                resourceIdsArray.add(this->resourceIds[i]);
+            }
+        }
+        
         doc["value"] = this->value;
         doc["from"] = this->from;
         doc["to"] = this->to;
@@ -284,7 +363,15 @@ struct ControllerRule : public Resource
         {
             JsonObject effectObj = doc["effect"].to<JsonObject>();
             effectObj["type"] = this->effect->type();
-            effectObj["resourceId"] = this->effect->resourceId;
+            
+            // Serialize resourceIds array
+            JsonArray resourceIdsArray = effectObj["resourceIds"].to<JsonArray>();
+            for (int i = 0; i < 10; i++) {
+                if (strlen(this->effect->resourceIds[i]) > 0) {
+                    resourceIdsArray.add(this->effect->resourceIds[i]);
+                }
+            }
+            
             effectObj["value"] = this->effect->value;
             effectObj["from"] = this->effect->from;
             effectObj["to"] = this->effect->to;
