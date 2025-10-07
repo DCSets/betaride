@@ -17,9 +17,12 @@ struct BMI160GyroConfig : Resource
     int sclPin;
     int minThreshold;
     int desiredRotation;
+    int maxCorrection;
+    float kP;
     float rollOffset;
     float pitchOffset;
     float yawOffset;
+    bool yawInverted;
     char servos[10][13];
     int servoCount;
 
@@ -49,7 +52,10 @@ struct BMI160GyroConfig : Resource
         this->rollOffset = doc["rollOffset"] | 0.0;
         this->pitchOffset = doc["pitchOffset"] | 0.0;
         this->yawOffset = doc["yawOffset"] | 0.0;
-
+        this->maxCorrection = doc["maxCorrection"] | 15;
+        this->kP = doc["kP"] | 0.3;
+        this->yawInverted = doc["yawInverted"] | false;
+        this->servoCount = 0;
         if (doc["servos"].is<JsonArray>()) {
             JsonArray resourceIdsArray = doc["servos"];
             int arrayCount = min((int)resourceIdsArray.size(), 10); // Limit to array size
@@ -77,10 +83,12 @@ struct BMI160GyroConfig : Resource
         doc["sclPin"] = this->sclPin;
         doc["desiredRotation"] = this->desiredRotation;
         doc["minThreshold"] = this->minThreshold;
+        doc["maxCorrection"] = this->maxCorrection;
+        doc["kP"] = this->kP;
         doc["rollOffset"] = this->rollOffset;
         doc["pitchOffset"] = this->pitchOffset;
         doc["yawOffset"] = this->yawOffset;
-
+        doc["yawInverted"] = this->yawInverted;
         // Serialize resourceIds array
         JsonArray resourceIdsArray = doc["servos"].to<JsonArray>();
         for (int i = 0; i < 10; i++) {
@@ -110,7 +118,9 @@ public:
     bool isCalibrated() const { return _calibrated; }
 
     void setMeasureAngle(bool measure_angle) { this->measure_angle = measure_angle; }
-    bool exceededRotationThreshold() const { return abs(_yaw_velocity) > this->_config.minThreshold; }
+    bool exceededRotationThreshold() const { 
+        return abs(_yaw_velocity) > this->_config.minThreshold; 
+    }
     void printAngles()
     {
         static uint32_t last = 0;
@@ -129,7 +139,7 @@ public:
     int calculateNewAngle(int currentAngle, int midAngle);
     void getServoIds(String *servos) const {
         for(int i = 0; i < this->_config.servoCount; i++) {
-            servos[i] = this->_config.servos[i];
+            servos[i] = String(this->_config.servos[i]);
         }
     }
     
@@ -169,10 +179,6 @@ private:
     const unsigned long CONNECTION_ATTEMPT_INTERVAL = 3000;
     unsigned long _connection_attempt = 0;
     bool connectGyro();
-
-    // TODO: Move it to config?
-    const int MAX_CORRECTION_ANGLE = 15;
-    const float CORRECTION_FACTOR = 0.3;
 };
 
 #endif

@@ -44,66 +44,66 @@ void App::calibrateGyro()
 
 void App::loop()
 {
-    if(_controller == nullptr || !_controller->isConnected() || _ruleEngine == nullptr || !_ruleEngine->hasRules()) {
-        return;
-    }
+    // if(_controller == nullptr || !_controller->isConnected() || _ruleEngine == nullptr || !_ruleEngine->hasRules()) {
+    //     return;
+    // }
 
-    _controller->loop();
-    for(auto &rule : _ruleEngine->rules) {
-        if(!_ruleEngine->checkCondition(rule.condition)) {
-            continue;
-        }
-        if(rule.hasSubCondition && !_ruleEngine->checkCondition(rule.subCondition)) {
-            continue;
-        }
+    // _controller->loop();
+    // for(auto &rule : _ruleEngine->rules) {
+    //     if(!_ruleEngine->checkCondition(rule.condition)) {
+    //         continue;
+    //     }
+    //     if(rule.hasSubCondition && !_ruleEngine->checkCondition(rule.subCondition)) {
+    //         continue;
+    //     }
 
-        if(rule.effect->count == 0) {
-            continue;
-        }
+    //     if(rule.effect->count == 0) {
+    //         continue;
+    //     }
 
-        for(int i = 0; i < rule.effect->count; i++) {
-            String arduinoResourceId = rule.effect->resourceIds[i];
-            std::string resourceId = arduinoResourceId.c_str();
-            if(rule.effect->type() == TYPE_SERVOS) {
-                auto it = _servos.find(resourceId);
-                if(it != _servos.end()) {
-                    int angle = _ruleEngine->getServoAngle(rule, it->second);
-                    if(angle != -1) {
-                        it->second->setAngle(angle);
-                    }
-                } 
-            }
+    //     for(int i = 0; i < rule.effect->count; i++) {
+    //         String arduinoResourceId = rule.effect->resourceIds[i];
+    //         std::string resourceId = arduinoResourceId.c_str();
+    //         if(rule.effect->type() == TYPE_SERVOS) {
+    //             auto it = _servos.find(resourceId);
+    //             if(it != _servos.end()) {
+    //                 int angle = _ruleEngine->getServoAngle(rule, it->second);
+    //                 if(angle != -1) {
+    //                     it->second->setAngle(angle);
+    //                 }
+    //             } 
+    //         }
     
-            if(rule.effect->type() == TYPE_MOTORS) {
-                auto it = _motors.find(resourceId);
-                if(it != _motors.end()) {
-                    int speed = _ruleEngine->getMotorSpeed(rule);
-                    MotorDirection direction = _ruleEngine->getMotorDirection(rule);
-                    if(speed != -1) {
-                        it->second->setThrottle(speed);
-                    }
-                    if(direction != MotorDirection::UNSPECIFIED) {
-                        it->second->setDirection(direction);
-                    }
-                } 
-            }
+    //         if(rule.effect->type() == TYPE_MOTORS) {
+    //             auto it = _motors.find(resourceId);
+    //             if(it != _motors.end()) {
+    //                 int speed = _ruleEngine->getMotorSpeed(rule);
+    //                 MotorDirection direction = _ruleEngine->getMotorDirection(rule);
+    //                 if(speed != -1) {
+    //                     it->second->setThrottle(speed);
+    //                 }
+    //                 if(direction != MotorDirection::UNSPECIFIED) {
+    //                     it->second->setDirection(direction);
+    //                 }
+    //             } 
+    //         }
     
-            if(rule.effect->type() == TYPE_BRUSHLESS_MOTORS) {
-                auto it = _brushlessMotors.find(resourceId);
-                if(it != _brushlessMotors.end()) {
-                    int speed = _ruleEngine->getMotorSpeed(rule);
-                    MotorDirection direction = _ruleEngine->getMotorDirection(rule);
-                    if(speed != -1) {
-                        it->second->setThrottle(speed);
-                    }
-                    if(direction != MotorDirection::UNSPECIFIED) {
-                        it->second->setDirection(direction);
-                    }
-                } 
-            }
+    //         if(rule.effect->type() == TYPE_BRUSHLESS_MOTORS) {
+    //             auto it = _brushlessMotors.find(resourceId);
+    //             if(it != _brushlessMotors.end()) {
+    //                 int speed = _ruleEngine->getMotorSpeed(rule);
+    //                 MotorDirection direction = _ruleEngine->getMotorDirection(rule);
+    //                 if(speed != -1) {
+    //                     it->second->setThrottle(speed);
+    //                 }
+    //                 if(direction != MotorDirection::UNSPECIFIED) {
+    //                     it->second->setDirection(direction);
+    //                 }
+    //             } 
+    //         }
 
-        }
-    }
+    //     }
+    // }
 
     for(auto &gyro : _gyros) {
         gyro.second->loop();
@@ -118,6 +118,10 @@ void App::loop()
                         it->second->setAngle(newAngle);
                     }
                 }
+            }
+        } else {
+            for(auto &servo : _servos) {
+                servo.second->setAngle(servo.second->getMidAngle());
             }
         }
     }

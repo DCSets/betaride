@@ -209,27 +209,27 @@ float BMI160Gyro::unwrapAngle(float prev, float current)
 }
 
 int BMI160Gyro::calculateNewAngle(int currentAngle, int midAngle) {
-    
+    bool rotationLeft = _yaw_velocity * (_config.yawInverted ? -1 : 1) > 0;
     float currentAngleVelocity = abs(_yaw_velocity);
     float desiredAngleVelocity = _config.desiredRotation;
 
     float error = desiredAngleVelocity - currentAngleVelocity;
-    float correction = error * CORRECTION_FACTOR;
-    correction = constrain(correction, -MAX_CORRECTION_ANGLE, MAX_CORRECTION_ANGLE);
+    float correction = error * _config.kP;
+    correction = constrain(correction, -_config.maxCorrection, _config.maxCorrection);
 
     if(correction > 0) {
         // Under steering. Correct by increasing the angle.
-        if(currentAngle > midAngle) {
-            return currentAngle + correction;
-        } else {
+        if(rotationLeft) {
             return currentAngle - correction;
+        } else {
+            return currentAngle + correction;
         }
     } else {
         // Over steering. Correct by decreasing the angle.
-        if(currentAngle > midAngle) {
-            return currentAngle - correction;
-        } else {
+        if(rotationLeft) {
             return currentAngle + correction;
+        } else {
+            return currentAngle - correction;
         }
     }
 }
