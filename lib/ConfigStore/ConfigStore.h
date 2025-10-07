@@ -9,6 +9,7 @@
 #include <ELRSController.h>
 #include <PS5_Controller.h>
 #include <Servo.h>
+#include <BMI160Gyro.h>
 #include <constants.h>
 #include <ControllerRules.h>
 
@@ -26,18 +27,21 @@ public:
     void saveMotorsConfig(MotorConfig *motorsConfig, int count) { this->saveResources(motorsConfig, count, TYPE_MOTORS, MAX_MOTORS); };
     void saveBrushlessMotorsConfig(BrushlessMotorConfig *brushlessMotorsConfig, int count) { this->saveResources(brushlessMotorsConfig, count, TYPE_BRUSHLESS_MOTORS, MAX_BRUSHLESS_MOTORS); };
     void saveServosConfig(ServoConfig *servosConfig, int count) { this->saveResources(servosConfig, count, TYPE_SERVOS, MAX_SERVOS); };
+    void saveGyroConfig(BMI160GyroConfig *gyrosConfig, int count) { this->saveResources(gyrosConfig, count, TYPE_GYRO, MAX_GYROS); };
     void saveControllerConfig(ControllerConfig *controllerConfig);
     void saveControllerRulesConfig(ControllerRule *rules, int count) { this->saveResources(rules, count, TYPE_CONTROLLER_RULES, MAX_RULES); };
 
     MotorConfig *loadMotorsConfig() { return this->loadConfig(_motorsConfig, TYPE_MOTORS, "motors"); };
     BrushlessMotorConfig *loadBrushlessMotorsConfig() { return this->loadConfig(_brushlessMotorsConfig, TYPE_BRUSHLESS_MOTORS, "brushless motors"); };
     ServoConfig *loadServosConfig() { return this->loadConfig(_servosConfig, TYPE_SERVOS, "servos"); };
+    BMI160GyroConfig *loadGyrosConfig() { return this->loadConfig(_gyrosConfig, TYPE_GYRO, "gyros"); };
     ControllerRule *loadControllerRulesConfig() { return this->loadConfig(_controllerRules, TYPE_CONTROLLER_RULES, "Controller rules"); };
     ControllerConfig *loadControllerConfig();
 
     MotorConfig *getMotorsConfig() { return _motorsConfig; };
     BrushlessMotorConfig *getBrushlessMotorsConfig() { return _brushlessMotorsConfig; };
     ServoConfig *getServosConfig() { return _servosConfig; };
+    BMI160GyroConfig *getGyrosConfig() { return _gyrosConfig; };
     ControllerConfig *getControllerConfig() { return _controllerConfig; };
     ControllerRule *getControllerRulesConfig() { return _controllerRules; };
 
@@ -50,6 +54,7 @@ private:
     // Array members to store the data
     MotorConfig _motorsConfig[MAX_MOTORS];
     ServoConfig _servosConfig[MAX_SERVOS];
+    BMI160GyroConfig _gyrosConfig[MAX_GYROS];
     BrushlessMotorConfig _brushlessMotorsConfig[MAX_BRUSHLESS_MOTORS];
     ControllerRule _controllerRules[MAX_RULES];
     ControllerConfig* _controllerConfig = nullptr;

@@ -24,16 +24,19 @@ void ConfiguratorSerial::loop()
         this->_store->clearEntities();
         
         static MotorConfig motors[MAX_MOTORS];
+        static BMI160GyroConfig gyros[MAX_GYROS];
         static BrushlessMotorConfig brushlessMotors[MAX_BRUSHLESS_MOTORS];
         static ServoConfig servos[MAX_SERVOS];
         static ControllerRule controllerRules[MAX_RULES];
 
         int servosCount = 0;
+        int gyrosCount = 0;
         int motorsCount = 0;
         int brushlessCount = 0;
         int rulesCount = 0;
 
         memset(motors, 0, sizeof(motors));
+        memset(gyros, 0, sizeof(gyros));
         memset(brushlessMotors, 0, sizeof(brushlessMotors));
         memset(servos, 0, sizeof(servos));
         memset(controllerRules, 0, sizeof(controllerRules));
@@ -64,6 +67,10 @@ void ConfiguratorSerial::loop()
             if (type == TYPE_MOTORS && motorsCount < MAX_MOTORS)
             {
                 motors[motorsCount++] = MotorConfig(json);
+            }
+            if (type == TYPE_GYRO && gyrosCount < MAX_GYROS)
+            {
+                gyros[gyrosCount++] = BMI160GyroConfig(json);
             }
             if (type == TYPE_BRUSHLESS_MOTORS && motorsCount < MAX_BRUSHLESS_MOTORS)
             {
@@ -104,6 +111,8 @@ void ConfiguratorSerial::loop()
 
         if (motorsCount > 0)
             _store->saveMotorsConfig(motors, motorsCount);
+        if (gyrosCount > 0)
+            _store->saveGyroConfig(gyros, gyrosCount);
         if (brushlessCount > 0)
             _store->saveBrushlessMotorsConfig(brushlessMotors, brushlessCount);
         if (servosCount > 0)
@@ -182,6 +191,22 @@ void ConfiguratorSerial::processCommand(String chunks[], int count)
         if (DEBUG)
         {
             Serial.println("Controller testing: " + String(this->_controllerTesting));
+        }
+    }
+    else if (baseCommand == _CMD_TEST_GYRO)
+    {
+        this->_gyroTesting = (chunks[1] == "1") ? true : false;
+        if (DEBUG)
+        {
+            Serial.println("Gyro testing: " + String(this->_gyroTesting));
+        }
+    }
+    else if (baseCommand == _CMD_CALIBRATE_GYRO)
+    {
+        this->_gyroCalibrate = (chunks[1] == "1") ? true : false;
+        if (DEBUG)
+        {
+            Serial.println("Gyro calibrating: " + String(this->_gyroCalibrate));
         }
     }
     else if (baseCommand == _CMD_SCAN_BLUETOOTH)

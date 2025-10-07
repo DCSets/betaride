@@ -10,6 +10,7 @@ ConfigStore::ConfigStore()
     this->loadMotorsConfig();
     this->loadBrushlessMotorsConfig();
     this->loadServosConfig();
+    this->loadGyrosConfig();
     this->loadControllerConfig();
     this->loadControllerRulesConfig();
 
@@ -97,6 +98,7 @@ void ConfigStore::clearEntities()
     this->cleanEntity(TYPE_BRUSHLESS_MOTORS, MAX_BRUSHLESS_MOTORS);
     this->cleanEntity(TYPE_SERVOS, MAX_SERVOS);
     this->cleanEntity(TYPE_CONTROLLER, 1);
+    this->cleanEntity(TYPE_GYRO, 1);
     this->cleanEntity(TYPE_CONTROLLER_RULES, MAX_RULES);
 }
 
@@ -110,6 +112,9 @@ void ConfigStore::printResourcesConfgs()
     
     Serial.println("=== Servos ===");
     this->printConfigs(_servosConfig, MAX_SERVOS);
+    
+    Serial.println("=== Gyros ===");
+    this->printConfigs(_gyrosConfig, MAX_GYROS);
     
     Serial.println("=== Controller ===");
     ControllerConfig* controllerConfig = this->getControllerConfig();

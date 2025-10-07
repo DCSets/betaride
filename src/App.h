@@ -11,6 +11,7 @@
 #include <Controller.h>
 #include <RuleEngine.h>
 #include <Servo.h>
+#include <BMI160Gyro.h>
 
 class App
 {
@@ -21,7 +22,8 @@ public:
     void loadResources();
     void loop();
     void testController();
-    
+    void testGyro();
+    void calibrateGyro();
     ConfigStore& getStore() { return _store; }
     
 private:
@@ -32,12 +34,14 @@ private:
     std::map<std::string, BrushlessMotor*> _brushlessMotors;
     std::map<std::string, Motor*> _motors;
     std::map<std::string, Servo*> _servos;
+    std::map<std::string, BMI160Gyro*> _gyros;
     void resetController();
     void resetResources();
 
     void loadMotors();
     void loadBrushlessMotors();
     void loadServos();
+    void loadGyros();
     void loadControllerRules();
     void loadController();
 };

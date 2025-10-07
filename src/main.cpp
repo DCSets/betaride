@@ -11,6 +11,7 @@ ConfiguratorSerial *serial = nullptr;
 ConfigStore *store = nullptr;
 App *app = nullptr;
 
+
 void setup()
 {
   Serial.begin(115200);
@@ -26,7 +27,18 @@ void loop()
   if(!serial->isConnected()) {
     app->loop();
   }
+  
   if(serial->isControllerTesting()) {
     app->testController();
   }
+
+  if(serial->isGyroTesting()) {
+    app->testGyro();
+  }
+
+  if(serial->shouldCalibrateGyro()) {
+    app->calibrateGyro();
+    serial->gyroCalibrated();
+  }
 }
+

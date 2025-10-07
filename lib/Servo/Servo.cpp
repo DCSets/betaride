@@ -7,10 +7,12 @@ Servo::Servo(const ServoConfig &config) : _config(config)
     ledcAttachPin(this->_config.pin, this->_config.channel);
 
     _angle = config.angleCenter; // Center servo on start
+    _previousAngle = _angle;
 }
 
 void Servo::setAngle(int degrees)
 {
+    _previousAngle = _angle;
     _angle = constrain(degrees, 0, _config.maxAngle);
 }
 

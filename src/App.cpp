@@ -19,6 +19,29 @@ void App::testController()
     _controller->loop();
     _controller->printAllChannels();
 }
+
+void App::testGyro()
+{
+    if (_gyros.empty())
+        return;
+
+    for(auto &gyro : _gyros) {
+        gyro.second->setMeasureAngle(true);
+        gyro.second->loop();
+        gyro.second->printAngles();
+    }
+}
+
+void App::calibrateGyro()
+{
+    if (_gyros.empty())
+        return;
+
+    for(auto &gyro : _gyros) {
+        gyro.second->calibrate();
+    }
+}
+
 void App::loop()
 {
     if(_controller == nullptr || !_controller->isConnected() || _ruleEngine == nullptr || !_ruleEngine->hasRules()) {
@@ -82,6 +105,23 @@ void App::loop()
         }
     }
 
+    for(auto &gyro : _gyros) {
+        gyro.second->loop();
+        if(gyro.second->exceededRotationThreshold()) {
+            String servos[10];
+            gyro.second->getServoIds(servos);
+            for(int i = 0; i < 10; i++) {
+                if(strlen(servos[i].c_str()) > 0) {
+                    auto it = _servos.find(servos[i].c_str());
+                    if(it != _servos.end()) {
+                        int newAngle = gyro.second->calculateNewAngle(it->second->getAngle(), it->second->getMidAngle());
+                        it->second->setAngle(newAngle);
+                    }
+                }
+            }
+        }
+    }
+
     for(auto &servo : _servos) {
         servo.second->loop();
     }
@@ -101,6 +141,7 @@ void App::loadResources()
     this->loadMotors();
     this->loadBrushlessMotors();
     this->loadServos();
+    this->loadGyros();
 }
 
 void App::resetController()
@@ -123,6 +164,9 @@ void App::resetResources()
     for (auto& pair : _servos) {
         delete pair.second;
     }
+    for (auto& pair : _gyros) {
+        delete pair.second;
+    }
     if (_ruleEngine != nullptr)
     {
         delete _ruleEngine;
@@ -132,6 +176,7 @@ void App::resetResources()
     _brushlessMotors.clear();
     _motors.clear();
     _servos.clear();
+    _gyros.clear();
     this->resetController();
 }
 
@@ -230,4 +275,27 @@ void App::loadServos()
     }
 
     Serial.println("Servos loaded: " + String(_servos.size()));
+}
+
+void App::loadGyros()
+{
+    // Get the loaded gyros configs
+    BMI160GyroConfig *configs = _store.getGyrosConfig();
+    for (auto& pair : _gyros) {
+        delete pair.second;
+    }
+    _gyros.clear();
+
+    // Initialize Gyros instances for each valid config
+    for (int i = 0; i < MAX_GYROS; i++)
+    {
+        // Check if this config slot has a valid ID (not empty)
+        if (strlen(configs[i].id) > 0)
+        {
+            _gyros[configs[i].id] = new BMI160Gyro(configs[i]);
+            _gyros[configs[i].id]->begin();
+        }
+    }
+
+    Serial.println("Gyros loaded: " + String(_gyros.size()));
 }
