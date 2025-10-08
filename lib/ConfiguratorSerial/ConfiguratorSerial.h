@@ -24,6 +24,11 @@ public:
     };
     boolean isConnected() { return this->_isConnected; };
     boolean isControllerTesting() { return this->_controllerTesting; };
+    boolean isGyroTesting() { return this->_gyroTesting; };
+    boolean shouldCalibrateGyro() { 
+        return this->_gyroCalibrate; 
+    };
+    void gyroCalibrated() { this->_gyroCalibrate = false; };
 
     void loop();
     int parseCommand(String received, String outputChunks[], int maxChunks);
@@ -33,6 +38,8 @@ public:
 
 private:
     boolean _controllerTesting = false;
+    boolean _gyroTesting = false;
+    boolean _gyroCalibrate = false;
     boolean _isConnected = false;
     boolean _configTransfer = false;
     std::vector<std::pair<std::string, std::string>> _resources;
@@ -82,6 +89,8 @@ private:
     static constexpr const char *_CMD_CLEAR_RESOURCES = "clear";
     static constexpr const char *_CMD_RESTART = "restart";
     static constexpr const char *_CMD_TEST_CONTROLLER = "tcontroller";
+    static constexpr const char *_CMD_TEST_GYRO = "tgyro";
+    static constexpr const char *_CMD_CALIBRATE_GYRO = "calibrateGyro";
 
     static constexpr const char *_CMD_SCAN_BLUETOOTH = "scanbt";
     static constexpr const char *_CMD_BLUETOOTH_DEVICE_FOUND = "scanbtfound";

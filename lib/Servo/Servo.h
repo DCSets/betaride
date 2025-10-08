@@ -74,9 +74,13 @@ public:
     void setAngle(int degrees);
     void loop();
     int getMaxAngle() { return _config.maxAngle; }
+    int getPreviousAngle() { return _previousAngle; }
+    int getAngle() { return _angle; }
+    int getMidAngle() { return _config.angleCenter; }
 private:
     ServoConfig _config;
     int _angle;
+    int _previousAngle;
 };
 
 #endif

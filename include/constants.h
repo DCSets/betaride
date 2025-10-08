@@ -17,12 +17,14 @@ constexpr const char *TYPE_MOTORS = "m";
 constexpr const char *TYPE_BRUSHLESS_MOTORS = "bm";
 constexpr const char *TYPE_SERVOS = "s";
 constexpr const char *TYPE_CONTROLLER = "c";
+constexpr const char *TYPE_GYRO = "g";
 constexpr const char *TYPE_CONTROLLER_RULES = "cr";
 // Resources limits
 constexpr int MAX_MOTORS = 10;
 constexpr int MAX_BRUSHLESS_MOTORS = 10;
 constexpr int MAX_SERVOS = 10;
 constexpr int MAX_CONTROLLERS = 1;
+constexpr int MAX_GYROS = 1;
 constexpr int MAX_RULES = 40;
 
 

@@ -11,6 +11,12 @@ enum ControllerType
     PS4_DUALSHOCK = 3
 };
 
+enum class GyroType
+{
+    UNKNOWN = 0,
+    BMI160 = 1,
+};
+
 enum class MotorDirection
 {
     UNSPECIFIED = -1,
