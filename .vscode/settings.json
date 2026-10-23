@@ -1,0 +1,10 @@
+{
+  "clangd.arguments": [
+    "--compile-commands-dir=${workspaceFolder}",
+    "--query-driver=C:/Users/borys/.platformio/packages/toolchain-xtensa-esp-elf/bin/xtensa-esp32-elf-*"
+  ],
+  "files.associations": {
+    "*.h": "cpp",
+    "*.ino": "cpp"
+  }
+}

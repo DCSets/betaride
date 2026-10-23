@@ -19,9 +19,9 @@ class RuleEngine {
         bool checkCondition(const RuleCondition& cond);
 
         MotorDirection getMotorDirection(const ControllerRule& rule) {
-            if(rule.effect->type() == TYPE_MOTORS) {
+            if(strcmp(rule.effect->type(), TYPE_MOTORS) == 0) {
                 return static_cast<RuleEffectMotor*>(rule.effect.get())->direction;
-            } else if(rule.effect->type() == TYPE_BRUSHLESS_MOTORS) {
+            } else if(strcmp(rule.effect->type(), TYPE_BRUSHLESS_MOTORS) == 0) {
                 return static_cast<RuleEffectBrushlessMotor*>(rule.effect.get())->direction;
             }
             

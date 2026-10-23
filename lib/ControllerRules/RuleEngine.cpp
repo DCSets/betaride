@@ -41,11 +41,11 @@ bool RuleEngine::checkCondition(const RuleCondition &cond)
 int RuleEngine::getMotorSpeed(const ControllerRule &rule)
 {
     MotorFunction function = MotorFunction::UNSPECIFIED;
-    if (rule.effect->type() == TYPE_MOTORS)
+    if (strcmp(rule.effect->type(), TYPE_MOTORS) == 0)
     {
         function = static_cast<RuleEffectMotor *>(rule.effect.get())->function;
     }
-    else if (rule.effect->type() == TYPE_BRUSHLESS_MOTORS)
+    else if (strcmp(rule.effect->type(), TYPE_BRUSHLESS_MOTORS) == 0)
     {
         function = static_cast<RuleEffectBrushlessMotor *>(rule.effect.get())->function;
     }
@@ -82,7 +82,7 @@ int RuleEngine::getMotorSpeed(const ControllerRule &rule)
 int RuleEngine::getServoAngle(const ControllerRule &rule, Servo *servo)
 {
     ServoFunction function = ServoFunction::UNSPECIFIED;
-    if (rule.effect->type() == TYPE_SERVOS)
+    if (strcmp(rule.effect->type(), TYPE_SERVOS) == 0)
     {
         function = static_cast<RuleEffectServo *>(rule.effect.get())->function;
     }

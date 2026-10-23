@@ -1,0 +1,4 @@
+CompileFlags:
+  CompilationDatabase: .
+QueryDriver:
+  - C:/Users/borys/.platformio/packages/toolchain-xtensa-esp-elf/bin/xtensa-esp32-elf-*

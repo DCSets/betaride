@@ -65,7 +65,7 @@ public:
     explicit Motor(const MotorConfig &config);
 
     void setThrottle(int percent);
-    void setDirection(MotorDirection direction);
+    void setDirection(MotorDirection direction, const char *source = nullptr);
     const char *getId() const { return _config.id; }
 
     void loop();
@@ -75,7 +75,14 @@ private:
     MotorDirection _direction;
 
     int _throttleLvl = 0;
-    int _reverseAt;
+    unsigned long _reverseAt = 0;
+    unsigned long _lastInputTime = 0;
+
+    // Debug: who changes the direction and how often
+    char _directionSource[32] = "";
+    unsigned long _directionLogAt = 0;
+    int _directionChanges = 0;
+    void logDirectionChange(MotorDirection direction, const char *source);
 };
 
 #endif
