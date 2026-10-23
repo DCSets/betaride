@@ -74,7 +74,7 @@ void App::loop()
         {
             String arduinoResourceId = rule.effect->resourceIds[i];
             std::string resourceId = arduinoResourceId.c_str();
-            if (rule.effect->type() == TYPE_SERVOS)
+            if (strcmp(rule.effect->type(), TYPE_SERVOS) == 0)
             {
                 auto it = _servos.find(resourceId);
                 if (it != _servos.end())
@@ -87,7 +87,7 @@ void App::loop()
                 }
             }
 
-            if (rule.effect->type() == TYPE_MOTORS)
+            if (strcmp(rule.effect->type(), TYPE_MOTORS) == 0)
             {
                 auto it = _motors.find(resourceId);
                 if (it != _motors.end())
@@ -100,12 +100,12 @@ void App::loop()
                     }
                     if (direction != MotorDirection::UNSPECIFIED)
                     {
-                        it->second->setDirection(direction);
+                        it->second->setDirection(direction, rule.name);
                     }
                 }
             }
 
-            if (rule.effect->type() == TYPE_BRUSHLESS_MOTORS)
+            if (strcmp(rule.effect->type(), TYPE_BRUSHLESS_MOTORS) == 0)
             {
                 auto it = _brushlessMotors.find(resourceId);
                 if (it != _brushlessMotors.end())

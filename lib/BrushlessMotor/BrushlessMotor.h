@@ -83,7 +83,7 @@ private:
     MotorDirection _direction;
 
     int _throttleLvl;
-    int _reverseAt;
+    unsigned long _reverseAt = 0;
 
     long _lastInputTime;
 };
